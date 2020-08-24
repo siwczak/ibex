@@ -577,7 +577,12 @@ jalr x1, x2, 8
 		W celu rozpoznania odpowiedniego \textit{slave'a} przypisuje im się adresy. Adresy te tworzą mapę, szczegółowy opis tejże mapy znajduje się w rozdziale 3.2.
 	\subsection{Ibex}
 	\hspace{5mm}
-		\\Ibex jest to mikroprocesor tworzony przez organizację \textit{LowRISC}. Jest on dwupotokowy, implementuje on \textit{ISA RV32IMC}. Wspiera on również rozszerzenie \textit{E} i eksperymentalne \textit{B}. Można je włączyć poprzez prawidłowe ustawienie parametrów\cite{ibex_doc}. Mikroprocesor ma szeroko rozwiniętą weryfikacje, wykorzystuje on między innymi generator rozkazów \textit{RISCV-DV}. Jest on również częścią projektu \textit{OpenTitan}, jest to \textit{RoT}, wspierany między innymi przez \textit{Google}\cite{google_opentitan}.
+		\\Ibex jest to mikroprocesor tworzony przez organizację \textit{LowRISC}. Jest on dwupotokowy:
+\begin{enumerate}
+	\item Pobieranie instrukcji - pobiera instrukcje z pamięci.
+	\item Dekodowanie i wykonanie instrukcji - zdekodowanie pobranej instrukcji i natychmiastowe jej wykonanie
+\end{enumerate}		
+		 Implementuje on \textit{ISA RV32IMC}. Wspiera on również rozszerzenie \textit{E} i eksperymentalne \textit{B}. Można je włączyć poprzez prawidłowe ustawienie parametrów\cite{ibex_doc}. Mikroprocesor ma szeroko rozwiniętą weryfikacje, wykorzystuje on między innymi generator rozkazów \textit{RISCV-DV}. Jest on również częścią projektu \textit{OpenTitan}, jest to \textit{RoT}, wspierany między innymi przez \textit{Google}\cite{google_opentitan}.
 		Rysunek \ref{Fig:ibex_block} przedstawia schemat blokowy mikroprocesora \textit{Ibex}\cite{ibex_doc}.
 			\begin{samepage}
 				\captionof{figure}{Schemat blokowy mikroprocesora\label{Fig:ibex_block}}
@@ -667,7 +672,7 @@ UVM test składa się z następujących elementów:
 
 	\subsection{Ibex}
 	\hspace{5mm}
-		\\o dodaniu clkgen by dobrze dzialal itp i ze wraper z wishbone
+		\\Głównym modułem jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wb}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Moduł ten został zainicjowany w module nadrzędnym \textit{ibex\_soc}. Moduł ten zawiera w sobie instancje wszystkich peryferii jak również interfejsów magistrali \textit{Wishbone}.
 
 	\subsection{Wishbone}
 	\hspace{5mm}
