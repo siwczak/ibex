@@ -1,0 +1,80 @@
+package:
+  name: mgr_soc
+  author:
+  - "Dawid Zimonczyk <dawizim@gmail.com>"
+
+export_include_dirs:
+  - uart
+  - ibex
+
+sources:
+  #level 0
+  - ibex/ibex_pkg.sv
+  - ibex/addr_map_pkg.sv
+  - i2c/i2c_package.sv
+  #level 1
+  - ibex/ibex_if.sv
+  - wishbone/wishbone_if.sv
+  #level 2
+  #i2c
+  - i2c/i2c_bit_controller.sv
+  - i2c/i2c_byte_controller.sv
+  - i2c/i2c_master_top.sv
+  #ram
+  - ram/1p_ram.sv
+  #spi
+  - spi/fifo.sv
+  - spi/spi_master.sv
+  - spi/spi_slave.sv
+  #uart
+  - uart/uart_receiver.v
+  - uart/uart_regs.v
+  - uart/uart_rfifo.v
+  - uart/uart_sync_flops.v
+  - uart/uart_tfifo.v
+  - uart/uart_top.v
+  - uart/uart_transmitter.v
+  - uart/uart_wb.v
+  - uart/raminfr.v
+  #wishbone
+  - wishbone/ibex_to_wb.sv
+  - ibex/ibex_wb.sv
+  - wishbone/slave_to_wb.sv
+  - wishbone/wb_1p_ram.sv
+  - wishbone/wb_i2c_master.sv
+  - wishbone/wb_led.sv
+  - wishbone/wb_spi_master.sv
+  - wishbone/wb_timer.sv
+  - wishbone/wb_uart.sv
+  - wishbone/wishbone_sharedbus.sv
+  # ibex
+  - ibex/ibex_alu.sv
+  - ibex/ibex_compressed_decoder.sv
+  - ibex/ibex_controller.sv
+  - ibex/ibex_core.sv
+  - ibex/ibex_counters.sv
+  - ibex/ibex_cs_registers.sv
+  - ibex/ibex_decoder.sv
+  - ibex/ibex_ex_block.sv
+  - ibex/ibex_fetch_fifo.sv
+  - ibex/ibex_icache.sv
+  - ibex/ibex_id_stage.sv
+  - ibex/ibex_if_stage.sv
+  - ibex/ibex_load_store_unit.sv
+  - ibex/ibex_multdiv_fast.sv
+  - ibex/ibex_multdiv_slow.sv
+  - ibex/ibex_pmp.sv
+  - ibex/ibex_prefetch_buffer.sv
+  - ibex/ibex_register_file_ff.sv
+  - ibex/ibex_wb_stage.sv
+  - ibex/prim_assert.sv
+  - timer/timer.sv
+  - xilinx/clkgen_xil7series.sv
+  - xilinx/prim_clock_gating.sv
+  - soc/ibex_soc.sv
+  
+  - target: test
+    files:
+      - dv/top.sv
+
+
