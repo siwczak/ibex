@@ -672,7 +672,11 @@ UVM test składa się z następujących elementów:
 
 	\subsection{Ibex}
 	\hspace{5mm}
-		\\Głównym modułem jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wb}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Moduł ten został zainicjowany w module nadrzędnym \textit{ibex\_soc}. Moduł ten zawiera w sobie instancje wszystkich peryferii jak również interfejsów magistrali \textit{Wishbone}.
+		\\Głównym modułem jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wb}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Zostały w nim zainicjonowane interfejsy pomocnicze:
+\begin{enumerate}
+	\item \textit{data_core} - interfejs 
+\end{enumerate}		
+		 Moduł ten został zainicjowany w module nadrzędnym \textit{ibex\_soc}. Moduł ten zawiera w sobie instancje wszystkich peryferii jak również interfejsów magistrali \textit{Wishbone}.
 
 	\subsection{Wishbone}
 	\hspace{5mm}

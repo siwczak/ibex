@@ -1,0 +1,11 @@
+TAGS
+/doc/*.aux
+/doc/*.bbl
+/doc/*.blg
+/doc/*.dvi
+/doc/*.lof
+/doc/*.log
+/doc/*.ps
+/doc/*.gz
+/doc/*.bak
+/doc/*.toc
