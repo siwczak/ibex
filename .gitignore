@@ -9,3 +9,10 @@ TAGS
 /doc/*.gz
 /doc/*.bak
 /doc/*.toc
+/doc/*.out
+*.lock
+*.do
+/work/
+*.cfg
+*.asdb
+/compile/

@@ -13,9 +13,16 @@
 \usepackage{makecell}
 \usepackage{bytefield}
 \usepackage{listings}
+\usepackage{hyperref}
+\urlstyle{same}
 \def\code#1{\texttt{#1}}
 \setlength{\parindent}{5mm}
-
+\captionsetup[table]{
+name = Tabela
+}
+\usepackage{titlesec}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
 \begin{document}
 	\date{}
 \begin{center}
@@ -47,7 +54,7 @@
 \vspace{3cm}
 
 \begin{flushleft}
-	
+
 \Large Autor: inż. Dawid Zimończyk
 \\
 \Large Kierujący pracą: dr hab. inż. Robert Czerwiński, prof. Pol. Śl.
@@ -111,6 +118,8 @@ SoC - System on Chip
 \\DUT - Device under test
 \\TCL - Tool Command Language
 \\HDL - hardware description language
+\\PLL - phase-locked loop
+\\Pmod - Peripheral Module interface
 \end{flushleft}
 \vspace{0.5cm}
 \end{center}
@@ -121,7 +130,7 @@ SoC - System on Chip
 	\subsection{Wstęp}
 	\hspace{5mm}
 		\\
-Systemy na chipie znane również jako SoC, występują w naszych telefonach czy samochodach. Również są częścią systemów wbudowanych, te zaś są wykorzystywane w każdej dziedzinie życia, od zegarków elektronicznych po zaawansowane roboty medyczne. Ważne jest więc by układy te były niezawodne i działały w zamierzony sposób. W celu weryfikacji działania układów, są wykorzystywane symulatory języków opisu sprzętu takie jak Riviera-PRO.
+Systemy na chipie znane również jako SoC, występują między innymi w naszych telefonach czy samochodach. Również są częścią systemów wbudowanych, te zaś są wykorzystywane w każdej dziedzinie życia, od zegarków elektronicznych po zaawansowane roboty medyczne. Ważne jest więc by układy te były niezawodne i działały w zamierzony sposób. W celu weryfikacji działania układów, są wykorzystywane symulatory języków opisu sprzętu takie jak Riviera-PRO.
 \\
 \\
 SoC powinien składać się z mikroprocesora, mikrokontrolera lub rdzenia DSP. Każdy mikroprocesor posiada 'Model programowy procesora' (ang Instruction Set Architecture, ISA). ISA definiuje jak mikroprocesor powinien działać, jego listę rozkazów, typ danych, tryby adresowania, rejestry dostępne dla programisty, zasady obsługi przerwań i wyjątków. Przykładowe komercyjne ISA: ARM, MIPS, Power ISA. Jest również otwarty model programowy procesora, który jest oparty o zasady RISC, jest nim RISC-V. Otwarta standard ISA oznacza, że dostęp nie jest limitowany prawnie, finansowo lub tajemnicą handlową firmy.
@@ -652,6 +661,7 @@ UVM test składa się z następujących elementów:
 			\item Mostek USB-UART
 			\item Port USB-JTAG Digilent do komunikacji i programowania FPGA
 			\item Cztery porty Pmod
+			\item 100MHz rezonator kwarcowy
 		\end{itemize}
 
 	\subsection{SystemVerilog}
@@ -670,13 +680,155 @@ UVM test składa się z następujących elementów:
 
 \section{Implementacja}
 
+	\subsection{SoC}
+	Modułem głównym projektu jest \textit{ibex\_soc}. Nazwy jego portów, parametru i ich przeznaczenie zostały przedstawione w tabeli \ref{Tab:soc_ports}
+
+			\begin{center}
+			\captionof{table}{Porty i parametry modułu \textit{ibex\_soc}\label{Tab:soc_ports}}\small
+				\begin{tabular}{|c|c|c|}
+					\hline
+					typ parametru/kierunek portu & nazwa parametru / portu & przeznaczenie \\
+					\hline
+					localparam & SPI\_SLAVE\_NUMBER & ilość portów SS SPI \\
+					\hline
+					input & I\_CLK & wejście sygnału zegarowego  \\
+					\hline
+					input & I\_RST\_N & wejście sygnału resetu \\
+					\hline
+					output & O\_LED & wyjście GPIO \\
+					\hline
+					input & I\_BTM & wejście GPIO \\
+					\hline
+					input & I\_UART\_RX & wejście UART receive \\
+					\hline
+					output & O\_UART\_TX & wyjście UART transmit \\
+					\hline
+					inout & IO\_SDA & dwukierunkowa linia danych I2C \\
+					\hline		
+					inout & IO\_SCL & dwukierunkowa linia zegara I2C \\
+					\hline	
+					input & I\_MISO & wejście Master In Slave Out SPI \\
+					\hline		
+					input & I\_MOSI & wejście Master Out Slave In SPI \\
+					\hline	
+					output & O\_MOSI & wyjście Master Out Slave In SPI \\
+					\hline		
+					output & O\_MISO & wyjście Master In Slave Out SPI \\
+					\hline																			output & O\_SCK & wyjście linii zegara SPI \\
+					\hline	
+					input & I\_SCK & wejście linii zegara SPI \\
+					\hline		
+					input & I\_CS & wejście wyboru slave SPI \\
+					\hline		
+					output & O\_CS & wyjście wyboru slave SPI \\
+					\hline				
+				\end{tabular}
+		\end{center}
+Parametr \textit{SPI\_SLAVE\_NUMBER} definiuje ilość wyjść wybory slave. Wejście sygnału zegarowego zostało podłączone do rezonatora kwarcowego o częstotliwości 100MHz. Wejście resetu zostało podłączone do przełącznika znajdującego się na płytce FPGA, jest on aktywny w stanie niskim. Sygnały \textit{GPIO} zostały podłączone do diod LED oraz przełączników. Sygnały \textit{UART} zostały podłączone do znajdującego się na płytce konwertera \textit{USB-UART}. Pozostałe sygnały zostały połączone z portami \textit{Pmod}.
+\\
+Tabela \ref{Tab:instancje_soc} przedstawia nazwy modułów i odpowiadające im instancje, zainicjowane w \textit{ibex\_soc}.
+
+			\begin{center}
+			\captionof{table}{Instancje modułów znajdujących się w \textit{ibex\_soc}\label{Tab:instancje_soc}}\small
+				\begin{tabular}{|c|c|c|}
+					\hline
+					nazwa modułu/interfejsu & nazwa instancji & przeznaczenie \\
+					\hline
+					clkgen & clkgen & buforowanie sygnału zegarowego oraz jego skalowanie \\
+					\hline
+					ibex\_wb & ibex\_wishbone & wraper rdzenia Ibex przystosowany do interfejsu \textit{Wishbone}  \\
+					\hline
+					wishbone\_sharedbus & wb\_share\_bus & komunikacja masterów ze slave'ami \\
+					\hline
+					wb\_1p\_ram\_instr & ram\_instr & jednoportowa pamięć RAM przeznaczona dla instrukcji \\
+					\hline
+					wb\_1p\_ram\_data & ram\_data & jednoportowa pamięć RAM przeznaczona dla danych \\
+					\hline
+					wb\_2p\_ram\_instr & ram\_instr & dwuportowa pamięć RAM przeznaczona dla instrukcji \\
+					\hline
+					wb\_2p\_ram\_data & ram\_data & dwuportowa pamięć RAM przeznaczona dla danych \\
+					\hline
+					wb\_gpio & wb\_gpio & wraper GPIO przystosowany do interfejsu \textit{Wishbone} \\
+					\hline		
+					wb\_uart & wb\_uart & wraper UART przystosowany do interfejsu \textit{Wishbone} \\
+					\hline	
+					wb\_i2c & wb\_i2c & wraper I2C przystosowany do interfejsu \textit{Wishbone} \\
+					\hline		
+					wb\_spi\_master & wb\_spi\_master & wraper SPI master przystosowany do interfejsu \textit{Wishbone} \\
+					\hline	
+					wb\_spi\_slave & wb\_spi\_slave & wraper SPI slave przystosowany do interfejsu \textit{Wishbone} \\
+					\hline		
+					wb\_timer & wb\_timer & wraper timera przystosowany do interfejsu \textit{Wishbone} \\
+					\hline			
+					wishbone\_if & wb\_master & tablica interfejsów przeznaczona dla rdzenia \\
+					\hline		
+					wishbone\_if & wb\_slave & tablica interfejsów przeznaczona dla peryferii \\
+					\hline													
+				\end{tabular}
+		\end{center}
+Szczegółowy opis powyższych modułów znajduje się w kolejnym podrozdziałach. 
 	\subsection{Ibex}
 	\hspace{5mm}
-		\\Głównym modułem jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wb}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Zostały w nim zainicjonowane interfejsy pomocnicze:
-\begin{enumerate}
-	\item \textit{data_core} - interfejs 
-\end{enumerate}		
-		 Moduł ten został zainicjowany w module nadrzędnym \textit{ibex\_soc}. Moduł ten zawiera w sobie instancje wszystkich peryferii jak również interfejsów magistrali \textit{Wishbone}.
+	\subsubsection{\textit{Ibex\_wishbone}}
+		Głównym modułem rdzenia jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wishbone}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Zostały w nim zainicjowane następujące moduły/interfejsy:
+\begin{itemize}
+	\item \textit{data\_core} - interfejs \textit{ibex\_if} z sygnałami danych.
+	\item \textit{instr\_core} - interfejs \textit{ibex\_if} z sygnałami instrukcji.
+	\item \textit{u\_core} - instancja modułu \textit{ibex\_core}
+	\item \textit{data\_core2wb} - instancja modułu \textit{ibex\_to\_wb}
+	\item \textit{instr\_core2wb} - instancja modułu \textit{ibex\_to\_wb}
+\end{itemize}		
+Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusić stan niski na sygnałach: \textit{we}, \textit{be} i \textit{wdata} w celu zabezpieczenia przypadkowego zapisu w pamięci instrukcji.
+			
+	\subsubsection{\textit{Data\_core} i \textit{Instr\_core}}
+\textit{Data\_core} i \textit{instr\_core} są to instancje interfejsu \textit{ibex\_if}. Są w nich zdefiniowane sygnały pochodzące z linii instrukcji i linii danych. Interfejs ten zawiera w sobie dwa modporty: \textit{master} i \textit{slave}. W zależności od potrzeby możemy odczytywać wartości sygnałów używając modportu \textit{slave}, modport \textit{master} daje możliwość zapisywania wartości sygnałów. Tabela \ref{Tab:interface_port} przedstawia listę sygnałów wraz z ich kierunkami w zależności od używanego modportu.
+\begin{center}
+			\captionof{table}{Porty i parametry modułu \textit{ibex\_soc}\label{Tab:interface_port}}\small
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					\multicolumn{2}{|c|}{Kierunek portu} & \multirow{2}{*}{Nazwa portu} & \multirow{2}{*}{Przeznaczenie}\\
+					\cline{1-2}
+					Modport master & Modport slave & & \\ 
+					\hline
+					input & input & clk\_i & sygnał zegarowy \\
+					\hline
+					input & input & rst\_ni & sygnał resetu \\
+					\hline
+					output & input & reg & żądanie zapytania\\
+					\hline
+					input & output & gnt & sygnał akceptacji zapytania\\
+					\hline
+					input & output & rvalid & sygnał prawidłowego odczytu danych\\
+					\hline
+					output & input & we & zezwolenie zapisu\\
+					\hline
+					output & input & be & sygnał bajtu\\
+					\hline
+					output & input & addr & sygnał adresowy\\
+					\hline
+					output & input & wdata & dane przeznaczone do zapisu\\
+					\hline
+					input & output & rdata & odczytane dane\\
+					\hline
+					input & output & err & sygnał błędu\\
+					\hline
+				\end{tabular}
+		\end{center}
+	\subsubsection{\textit{Ibex\_core}}
+		Moduł \textit{ibex\_core} został zainjonowany jako \textit{u\_core}. Zawiera on w sobie wszystkie submoduły rdzenia,a są to:
+\begin{itemize}
+	\item prim\_clock\_gating - moduł zawierający bufor sygnału zegarowego.
+	\item ibex\_if\_stage - odpowiedzialny za pobieranie instrukcji.
+	\item ibex\_id\_stage - odpowiedzialny za dekodowanie instrukcji.
+	\item ibex\_ex\_block - odpowiedzialny za wykonanie instrukcji.
+	\item ibex\_load\_store\_unit - odpowiedzialny za dostęp do pamięci danych.
+	\item ibex\_wb\_stage - opcjonalny trzeci potok, gdy nie jest aktywowany zapisuje  dane do rejestrów. 
+	\item ibex\_register\_file - zawiera rejestry.
+	\item ibex\_cs\_registers - zawiera rejestry kontrolne i statusu.
+\end{itemize}
+		\paragraph{test}
+		 
+		
 
 	\subsection{Wishbone}
 	\hspace{5mm}
@@ -817,9 +969,9 @@ UVM test składa się z następujących elementów:
 	
 	\bibitem{google_dv} https://bit.ly/33Vh8zI [dostęp 10 sierpień 2020]
 	
-	\bibitem{nexys} https://dl.btc.pl/kamami\_wa/digilent\_nexys4-ddr\_1.pdf [dostęp 10 sierpień 2020]
+	\bibitem{nexys} \url{https://dl.btc.pl/kamami\_wa/digilent\_nexys4-ddr\_1.pdf} [dostęp 10 sierpień 2020]
 	
-	\bibitem{SV} https://standards.ieee.org/standard/1800-2017.html [dostęp 10 sierpień 2020]
+	\bibitem{SV} \url{https://standards.ieee.org/standard/1800-2017.html} [dostęp 10 sierpień 2020]
 
 \end{thebibliography}
 
