@@ -6,6 +6,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage{float}
+\usepackage{grffile}
 \usepackage[figuresleft]{rotating}
 \usepackage{multirow}
 \usepackage{subfig}
@@ -14,6 +15,7 @@
 \usepackage{bytefield}
 \usepackage{listings}
 \usepackage{hyperref}
+\usepackage[super]{natbib}
 \urlstyle{same}
 \def\code#1{\texttt{#1}}
 \setlength{\parindent}{5mm}
@@ -120,6 +122,7 @@ SoC - System on Chip
 \\HDL - hardware description language
 \\PLL - phase-locked loop
 \\Pmod - Peripheral Module interface
+\\ALU - Arithmetic Logic Unit 
 \end{flushleft}
 \vspace{0.5cm}
 \end{center}
@@ -638,7 +641,7 @@ UVM test składa się z następujących elementów:
 	\item UVM Scoreboard - odbiera dane z \textit{uvm\_monitor} i porównuje z spodziewanymi wartościami. Wartości te mogą pochodzić z modelu referencyjnego lub \textit{golden pattern}.
 \end{itemize}
 		Rysunek \ref{Fig:uvm_block} przedstawia przykładowy graf UVM testu
-					\begin{samepage}
+			\begin{samepage}
 				\captionof{figure}{Przykładowy graf UVM\label{Fig:uvm_block}}
 				\nopagebreak
 				\begin{center}
@@ -769,7 +772,7 @@ Tabela \ref{Tab:instancje_soc} przedstawia nazwy modułów i odpowiadające im i
 Szczegółowy opis powyższych modułów znajduje się w kolejnym podrozdziałach. 
 	\subsection{Ibex}
 	\hspace{5mm}
-	\subsubsection{\textit{Ibex\_wishbone}}
+	\subsubsection{\textit{Ibex wishbone}}
 		Głównym modułem rdzenia jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wishbone}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Zostały w nim zainicjowane następujące moduły/interfejsy:
 \begin{itemize}
 	\item \textit{data\_core} - interfejs \textit{ibex\_if} z sygnałami danych.
@@ -780,7 +783,7 @@ Szczegółowy opis powyższych modułów znajduje się w kolejnym podrozdziałac
 \end{itemize}		
 Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusić stan niski na sygnałach: \textit{we}, \textit{be} i \textit{wdata} w celu zabezpieczenia przypadkowego zapisu w pamięci instrukcji.
 			
-	\subsubsection{\textit{Data\_core} i \textit{Instr\_core}}
+	\subsubsection{\textit{Data core} i \textit{Instr core}}
 \textit{Data\_core} i \textit{instr\_core} są to instancje interfejsu \textit{ibex\_if}. Są w nich zdefiniowane sygnały pochodzące z linii instrukcji i linii danych. Interfejs ten zawiera w sobie dwa modporty: \textit{master} i \textit{slave}. W zależności od potrzeby możemy odczytywać wartości sygnałów używając modportu \textit{slave}, modport \textit{master} daje możliwość zapisywania wartości sygnałów. Tabela \ref{Tab:interface_port} przedstawia listę sygnałów wraz z ich kierunkami w zależności od używanego modportu.
 \begin{center}
 			\captionof{table}{Porty i parametry modułu \textit{ibex\_soc}\label{Tab:interface_port}}\small
@@ -814,19 +817,41 @@ Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusi�
 					\hline
 				\end{tabular}
 		\end{center}
-	\subsubsection{\textit{Ibex\_core}}
+	\subsubsection{\textit{Ibex core}}
 		Moduł \textit{ibex\_core} został zainjonowany jako \textit{u\_core}. Zawiera on w sobie wszystkie submoduły rdzenia,a są to:
 \begin{itemize}
-	\item prim\_clock\_gating - moduł zawierający bufor sygnału zegarowego.
-	\item ibex\_if\_stage - odpowiedzialny za pobieranie instrukcji.
-	\item ibex\_id\_stage - odpowiedzialny za dekodowanie instrukcji.
-	\item ibex\_ex\_block - odpowiedzialny za wykonanie instrukcji.
-	\item ibex\_load\_store\_unit - odpowiedzialny za dostęp do pamięci danych.
-	\item ibex\_wb\_stage - opcjonalny trzeci potok, gdy nie jest aktywowany zapisuje  dane do rejestrów. 
-	\item ibex\_register\_file - zawiera rejestry.
-	\item ibex\_cs\_registers - zawiera rejestry kontrolne i statusu.
+	\item \textit{Clock gating} - moduł zawierający bufor sygnału zegarowego.
+	\item \textit{Instruction Fetch} - odpowiedzialny za pobieranie instrukcji. W jednym cyklu dostarcza instrukcję do \textit{ibex\_id\_stage} o ile pamięć jest zdolna do wysłania jednej instrukcji na cykl. Instrukcje są przechwytywane do \textit{ibex\_prefetch\_buffer} w celu optymalizacji wydajności. Rozkazy są zapisywane wraz licznikiem rozkazów i pochodzą z \textit{ibex\_fetch\_fifo}. Gdy  \textit{FIFO} jest puste, instrukcja natychmiast zostaje przekazana na jego wyjście.
+	\item \textit{Instruction Decode} - odpowiedzialny za dekodowanie instrukcji. Zawiera on w sobie multipleksery, kontrolujące przepływ danych do \textit{ALU},
+	\item \textit{Instruction Execute} - odpowiedzialny za wykonanie instrukcji, zawiera on w sobie \textit{ALU} i moduły odpowiedzialne za mnożenie i dzielnie. 
+	\begin{itemize}
+		\item \textit{Arithmetic Logic Unit} - jednostka arytmetyczno-logiczna, blok kombinacyjny wykonujący obliczenia liczb całkowitych oraz operacje porównawcze.
+		Dodatkowo jest wykorzystywany:
+		\begin{itemize}
+			\item w wykonywaniu dodawania w ramach algorytmów mnożenia i dzielenia
+			\item w obliczaniu \textit{PC}+\textit{Imm}
+			\item w obliczaniu adresu pamięci \textit{Reg}+\textit{Imm}
+		\end{itemize}
+		\item \textit{Multiplier/Divider Block} - blok wykorzystywany do mnożenia i dzielenia. Są dostępne dwa tryby: szybki i wolny. Oba wykorzystują algorytm długiego podziału oraz jednostkę arytmetyczno-logiczną.
+	\end{itemize}
+	\item \textit{Load-Store Unit} - odpowiedzialny za dostęp do pamięci danych. Pozwala działać na słowach (32-bit) pół-słowach(16-bit) i bajtach(8-bit). Każda operacja zapisania lub odczytu danych powoduje zatrzymacie bloków \textit{ID/EX} na przynajmniej jeden cykl w celu oczekiwania na odpowiedź. Potrafi obsłużyć źle   ustawiony dostęp do pamięci, czyli dostęp, który nie jest w domyślnych granicach słowa. Potrzeba na to co najmniej dwóch cykli ponieważ są robione dwa osobne zapisania. Komunikacja z pamięcią odbywa się w następujący sposób:
+		\begin{enumerate}
+			\item Jednsotka LSU wysyła adres poprzez \textit{data\_addr\_o}, konfiguruje wyjścia \textit{data\_be\_o}, \textit{data\_wdata\_o}, ustawia stan wysoki sygnału \textit{data\_req\_o} i \textit{data\_we\_o}. Gdy pamięć będzie gotowa do obsługi żądania, odpowiada stanem wysokim sygnału \textit{data\_gnt\_i}.
+			\item Po otrzymaniu potwierdzenia gotowości, \textit{LSU} może zmienić wartość sygnału \textit{data\_addr\_o}.
+			\item Pamięć wysyła wysoki stan sygnału \textit{data\_rvalid\_i} wraz z informacją o wystąpieniu błędów, jeśli takowe się pojawią zostanie to zasygnalizowane stanem wysokim sygnału \textit{data\_err\_i}. Odczytane dane są przekazywane dostępne na linii \textit{data\_rdata\_i}.
+			\item W przypadku wielu żądań, są one obsługiwane w kolejności ich nadania.
+		\end{enumerate}
+		Rysunek \ref{Fig:memory_access} przedstawia przykład komunikacji między modułem \textit{LSU} a pamięcią.
+			\begin{samepage}
+				\captionof{figure}{Komunikacja \textit{LSU} z pamięcią\label{Fig:memory_access}}
+				\nopagebreak
+				\begin{center}
+					\includegraphics[width=14cm]{./rysunki/memory_access.png}
+				\end{center}
+			\end{samepage}
+	\item \textit{\textit{Register File}} - zawiera trzydzieści jeden lub piętnaście 32-bit rejestrów. Liczba ich jest zależna od rozszerzenia \textit{RV32E}. Rejestr \textit{x0} jest zawsze zerem. Moduł ten posiada dwa porty przeznaczone dla odczytu i jeden dla zapisu. Gdy dany rejestr jest równocześnie zapisywany i odczytywany, zwróci on wartość aktualną a nie zapisywaną.
+	\item \textit{Control and Status Registers} - zawiera rejestry kontrolne i statusu.
 \end{itemize}
-		\paragraph{test}
 		 
 		
 
@@ -937,6 +962,7 @@ Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusi�
 		\\text
 
 \newpage
+
 \section{Bibliografia}
 
 \begin{thebibliography}{10}
