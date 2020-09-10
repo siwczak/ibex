@@ -1,0 +1,12 @@
+\babel@toc {polish}{}
+\babel@toc {polish}{}
+\contentsline {table}{\numberline {1}{\ignorespaces ISA base and extensions\cite {isa_book}\relax }}{12}{table.1}
+\contentsline {table}{\numberline {2}{\ignorespaces Rejestry RISC-V\cite {isa_book}\relax }}{12}{table.2}
+\contentsline {table}{\numberline {3}{\ignorespaces 32-bit RISC-V formaty instrukcji\cite {isa_book}\relax }}{13}{table.caption.1}
+\contentsline {table}{\numberline {4}{\ignorespaces Zale\IeC {\.z}no\IeC {\'s}\IeC {\'c} mi\IeC {\k e}dzy {\it func3} a instrukcj\IeC {\k a} load\cite {isa_book}\relax }}{14}{table.4}
+\contentsline {table}{\numberline {5}{\ignorespaces Zale\IeC {\.z}no\IeC {\'s}\IeC {\'c} mi\IeC {\k e}dzy {\it func3} a instrukcj\IeC {\k a} store\cite {isa_book}\relax }}{14}{table.5}
+\contentsline {table}{\numberline {6}{\ignorespaces Zale\IeC {\.z}no\IeC {\'s}\IeC {\'c} mi\IeC {\k e}dzy {\it func7} i {\it func3} a instrukcjami arytmetycznymi\cite {isa_book}\relax }}{15}{table.6}
+\contentsline {table}{\numberline {7}{\ignorespaces Porty i parametry modu\IeC {\l }u \textit {ibex\_soc}\relax }}{23}{table.7}
+\contentsline {table}{\numberline {8}{\ignorespaces Instancje modu\IeC {\l }\IeC {\'o}w znajduj\IeC {\k a}cych si\IeC {\k e} w \textit {ibex\_soc}\relax }}{23}{table.8}
+\contentsline {table}{\numberline {9}{\ignorespaces Porty i parametry modu\IeC {\l }u \textit {ibex\_soc}\relax }}{25}{table.9}
+\contentsline {table}{\numberline {10}{\ignorespaces Sygna\IeC {\l }y interfejsu \textit {wishbone\_if}\relax }}{28}{table.10}

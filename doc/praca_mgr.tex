@@ -7,6 +7,9 @@
 \usepackage{lmodern}
 \usepackage{float}
 \usepackage{grffile}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{listings}
 \usepackage[figuresleft]{rotating}
 \usepackage{multirow}
 \usepackage{subfig}
@@ -23,6 +26,10 @@
 name = Tabela
 }
 \usepackage{titlesec}
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{4}
 \begin{document}
@@ -79,11 +86,8 @@ name = Tabela
 
 \begin{center}
 \textbf {\Large Od autora}
-\\
-\vspace{0.5cm}
-
 \newpage
-
+\end{center}
 \large\tableofcontents 
 
 \newpage
@@ -93,9 +97,9 @@ name = Tabela
 
 
 \newpage
-
-\textbf {\Large Spis ważniejszych oznaczeń}
 \begin{flushleft}
+\textbf {\Large Spis ważniejszych oznaczeń}
+
 SoC - System on Chip
 \\ISA - instruction set architecture
 \\RISC - Reduced Instruction Set Computing
@@ -119,20 +123,19 @@ SoC - System on Chip
 \\TLM - Transaction Level Modeling
 \\DUT - Device under test
 \\TCL - Tool Command Language
-\\HDL - hardware description language
+%\\HDL - hardware description language
 \\PLL - phase-locked loop
 \\Pmod - Peripheral Module interface
 \\ALU - Arithmetic Logic Unit 
 \end{flushleft}
 \vspace{0.5cm}
-\end{center}
+
 
 \newpage
 \section{Wprowadzenie} 
 
 	\subsection{Wstęp}
 	\hspace{5mm}
-		\\
 Systemy na chipie znane również jako SoC, występują między innymi w naszych telefonach czy samochodach. Również są częścią systemów wbudowanych, te zaś są wykorzystywane w każdej dziedzinie życia, od zegarków elektronicznych po zaawansowane roboty medyczne. Ważne jest więc by układy te były niezawodne i działały w zamierzony sposób. W celu weryfikacji działania układów, są wykorzystywane symulatory języków opisu sprzętu takie jak Riviera-PRO.
 \\
 \\
@@ -144,7 +147,6 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 
 	\subsection{Cel i zakres pracy}
 	\hspace{5mm}
-	\\
 	Celem pracy jest implementacja SoC na podstawie mikroprocesora Ibex RISC-V. Mikroprocesor należy przystosować do implantacji na płytce FPGA NEXYS4DDR oraz dodać odpowiednie peryferia. Następnie przeprowadzić weryfikację zaimplementowanego systemu na chipie poprzez przeprowadzenie symulacji korzystając z biblioteki UVM 1.2 i testów RISCV complience. Weryfikacji zostanie poddany cały SoC jak i poszczególne peryferia.\newline
 	Zakres pracy obejmuje:
 	\begin{itemize}
@@ -166,7 +168,6 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 
 	\subsection{Zarys pracy}
 	\hspace{5mm}
-	\\
 	Praca składa się z 6 rozdziałów. Pierwszy zawiera krótkie omówienie tematu pracy, jej celu i zarys. Drugi rozdział jest poświęcony teorii. Opisuje on zagadnienia związane z ISA RISC-V, SoC, mikroprocesorem Ibex, kompilatorem, weryfikacją, płytce FPGA Nexys4 DDR i programem wykorzystanym do syntezy oraz programem do symulacji. Trzeci rozdział skupia się na implementacji poszczególnych części systemu na chipie, przedstawione zostaną w nim fragmentu opisu sprzętu, schematy blokowe i FSM. Czwarty rozdział przedstawia weryfikacje, opisuje przebiegające fazy biblioteki UVM 1.2 oraz jej wyniki. Następnie pokazuje symulację przeprowadzaną z instrukcjami wygenerowanymi przez RISCV-DV, Wyniki tej symulacji zostaną porównane z ISS Ovpsim i Spike. W piątym rozdziale zostaną porównane wyniki symulacji oraz syntezy architektury Von Neumanna z architekturą Harvardzką, pamięć RAM jedno-portowa z pamięcią RAM dwu-portową. Ostatni rozdział to podsumowanie oraz propozycję dalszego rozwoju projektu.
 \newpage
 	
@@ -176,7 +177,6 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 
 		\subsubsection{Instruction set architecture ISA}
 		\hspace{5mm}
-		\\
 		RISC-V to otwarta ISA bazująca na architekturze RISC. Oznacza to, że licensja jest typu Open-source, która pozwala na wprowadzanie dowonlych modyfikacji\cite{open_source}, również jest nie wymaga żadnych opłat za wykorzystywanie jej w komercyjnych celach. Dokumentacja składa się z trzech części\cite{isa_site}:
 		\begin{enumerate}
 			\item User-Level ISA Specification - specyfikacja ISA poziomu użytkownika
@@ -196,8 +196,19 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 		\item Procesor używa przetwarzania potokowego
 		\end{itemize}
 		Są cztery podstawowe zestawy instrukcji oraz piętnaście ich rozszerzeń. W tabeli \ref{Tab:ISA} przedstawiono ich podział.
+				Instrukcje są 32-bit. Tabela \ref{Tab:instruction} przedstawia formaty tych instrukcji. Korzystają one z sześciu formatów:
+		\begin{itemize}
+			\item Register (R) - instrukcje realizują działania na dwóch rejestrach {\it rs1} i {\it rs2}, wynik jest zapisywany w rejestrze {\it rd}.
+			\item Immediate (I) - instrukcje realizują działania rejestrze {\it rs1} i liczbie 12bitowej stałej ze znakiem, wynik jest zapisywany w rejestrze {\it rd}.
+			\item Upper immediate (U) - format wykorzystywany dla dwóch instrukcji: {\it LUI}, {\it AUIPC}. Służy do przypisywania liczb 20bitowych do rejestru {\it rd}.
+			\item Store (S) - instrukcje realizują zapis do pamięci, pobierany jest bazowy adres z rejestru {\it rs1} + offset pochodzący z {\it imm}, rejestr {\it rs2} przechowuje.
+			\item Branch (SB) - instrukcje realizują skoki warunkowe.
+			\item Jump (UJ) - instrukcje służące do skoków, dodają wartość {\it imm} do {\it PC}.
+		\end{itemize}
+		\begin{minipage}{\textwidth}
 		\begin{center}
 			\captionof{table}{ISA base and extensions\label{Tab:ISA}\cite{isa_book}}
+						\scalebox{1}{\small
 			\begin{tabular}{|c|c|}
 				\hline
 				Nazwa  & Opis\\
@@ -244,25 +255,16 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 				\hline
 				H & Standard Extension for Hypervisor \\
 				\hline
-				\end{tabular}
-		\end{center}https://riscv.org/specifications/
-		Instrukcje są 32-bit. Tabela \ref{Tab:instruction} przedstawia formaty tych instrukcji. Korzystają one z sześciu formatów:
-		\begin{itemize}
-			\item Register (R) - instrukcje realizują działania na dwóch rejestrach {\it rs1} i {\it rs2}, wynik jest zapisywany w rejestrze {\it rd}.
-			\item Immediate (I) - instrukcje realizują działania rejestrze {\it rs1} i liczbie 12bitowej stałej ze znakiem, wynik jest zapisywany w rejestrze {\it rd}.
-			\item Upper immediate (U) - format wykorzystywany dla dwóch instrukcji: {\it LUI}, {\it AUIPC}. Służy do przypisywania liczb 20bitowych do rejestru {\it rd}.
-			\item Store (S) - instrukcje realizują zapis do pamięci, pobierany jest bazowy adres z rejestru {\it rs1} + offset pochodzący z {\it imm}, rejestr {\it rs2} przechowuje.
-			\item Branch (SB) - instrukcje realizują skoki warunkowe.
-			\item Jump (UJ) - instrukcje służące do skoków, dodają wartość {\it imm} do {\it PC}.
-		\end{itemize}
+				\end{tabular}}
+		\end{center}
+	\end{minipage}
+
 		\subsubsection{Rejestry}
 		\hspace{5mm}
-		\\RISC-V posiada 32 rejestry (tryb embeded posiada tylko 16). Jeśli korzystamy z rozszerzenia zawierającego liczby zmiennoprzecinkowe, dodane zostają kolejne 32 rejestry. Pierwszy rejestr nazywany jest rejestrem zerowym. Zawsze przyjmuje wartość zera, a wszystkie dane zapisywane do niego są tracone. Służy on jako rejestr pomocniczy w wielu instrukcjach.
-		\pagebreak
+		RISC-V posiada 32 rejestry (tryb embeded posiada tylko 16). Jeśli korzystamy z rozszerzenia zawierającego liczby zmiennoprzecinkowe, dodane zostają kolejne 32 rejestry. Pierwszy rejestr nazywany jest rejestrem zerowym. Zawsze przyjmuje wartość zera, a wszystkie dane zapisywane do niego są tracone. Służy on jako rejestr pomocniczy w wielu instrukcjach.
 		\begin{center}
 			\captionof{table}{Rejestry RISC-V\label{Tab:registers}\cite{isa_book}}
-			\nopagebreak[4]
-			\scalebox{0.9}{\small
+			\scalebox{0.8}{\small
 			\begin{tabular}{|c|c|c|c|}
 			\hline
 			Nazwa rejestry & Nazwa symboliczna& Opis & Właściciel \\
@@ -338,7 +340,7 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 
 		\subsubsection{Dostęp do pamięci}
 		\hspace{5mm}
-			\\Dostęp do pamięci odbywa się za pomocą instrukcji {\it load/store}. W instrukcjach {\it load} adres bazowy znajduje się w rejestrze {\it rs1}, offset jest pobierany z liczby całkowitej 12bitowej {\it imm}. Rejestr docelowy znajduje się w {\it rd}. Przykład działania instrukcji {\it LW}:
+			Dostęp do pamięci odbywa się za pomocą instrukcji {\it load/store}. W instrukcjach {\it load} adres bazowy znajduje się w rejestrze {\it rs1}, offset jest pobierany z liczby całkowitej 12bitowej {\it imm}. Rejestr docelowy znajduje się w {\it rd}. Przykład działania instrukcji {\it LW}:
 			\begin{flushleft}			
 			{\fontfamily{qcr}\selectfont
 			lw x16, 8(x2)\\
@@ -406,7 +408,7 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 		\end{center}
 		\subsubsection{Instrukcje arytmetyczne i logiczne}
 		\hspace{5mm}
-			\\RISC-V zawiera zestaw instrukcji matematycznych przeznaczony dla liczb całkowitych w którego skład wchodzą: dodawanie, odejmowanie, przesuwanie , operacje logiczne i porównywanie liczb. Instrukcje dla mnożenia i dzielenia liczb znajdują się w rozszerzeniu ISA {\it M}. Zaś rozszerzenie ISA {\it F} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych pojedynczej precyzji, rozszerzenie {\it D} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych podwójnej precyzji\cite{isa_book}. Instrukcje te wykorzystują format {\it R} i {\it I}. Przykład działania rozkazu {\it add}, wykorzystuje on format instrukcji {\it R}:
+			RISC-V zawiera zestaw instrukcji matematycznych przeznaczony dla liczb całkowitych w którego skład wchodzą: dodawanie, odejmowanie, przesuwanie , operacje logiczne i porównywanie liczb. Instrukcje dla mnożenia i dzielenia liczb znajdują się w rozszerzeniu ISA {\it M}. Zaś rozszerzenie ISA {\it F} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych pojedynczej precyzji, rozszerzenie {\it D} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych podwójnej precyzji\cite{isa_book}. Instrukcje te wykorzystują format {\it R} i {\it I}. Przykład działania rozkazu {\it add}, wykorzystuje on format instrukcji {\it R}:
 			\begin{flushleft}			
 			{\fontfamily{qcr}\selectfont
 			add x6, x7, x8\\
@@ -464,7 +466,7 @@ Pierwszy argument trafił to rejestru {\it rd}, kolejny do rejestru {\it rs1} os
 			{\it Func3} jest wykorzystywana w celu dekodowania instrukcji. Rozkazu przesunięcia bitowego wykorzystują pięć najmłodszych bitów z {\it imm}. Siedem pozostałych bitów służy do rozpoznawania instrukcji.
 		\subsubsection{Instrukcje skokowe}
 		\hspace{5mm}
-			\\Instrukcje skokowe dzielą się na dwa rodzaje: skoki bezwarunkowe i skoki warunkowe. Pierwszą z nich reprezentują dwa rozkazy: \textit{JAL} (format \textit{UJ} i \textit{JALR} (format \textit{I}. Pierwszy z nich pozwala dodać do rejestru PC liczbę ze znakiem o szerokości 20bitów. Dzięki rozkazowi \textit{JALR} i \textit{AUIPC} można stworzyć skok o szerokości 32bitów. Rozkaz \textit{AUIPC} zapisuje do rejestru aktualną wartość PC, a rozkaz \textit{JALR}, zamienia dwanaście najmłodszych bitów na wartość przekazanego argumentu. Przykładowe programy z użyciem instrukcji skoków bezwarunkowych.
+			Instrukcje skokowe dzielą się na dwa rodzaje: skoki bezwarunkowe i skoki warunkowe. Pierwszą z nich reprezentują dwa rozkazy: \textit{JAL} (format \textit{UJ} i \textit{JALR} (format \textit{I}. Pierwszy z nich pozwala dodać do rejestru PC liczbę ze znakiem o szerokości 20bitów. Dzięki rozkazowi \textit{JALR} i \textit{AUIPC} można stworzyć skok o szerokości 32bitów. Rozkaz \textit{AUIPC} zapisuje do rejestru aktualną wartość PC, a rozkaz \textit{JALR}, zamienia dwanaście najmłodszych bitów na wartość przekazanego argumentu. Przykładowe programy z użyciem instrukcji skoków bezwarunkowych.
 				\begin{lstlisting}[language=Ant]
 addi x31, x0 ,0
 auipc x2, 0
@@ -487,7 +489,7 @@ jalr x1, x2, 8
 
 		\subsubsection{Architektura Harvardzka}
 		\hspace{5mm}
-			\\Architektura Harvardzka to rodzaj architektury komputera. Posiada ona dwie oddzielne szyny dla danych i rozkazów. Można w tym samym czasie pobierać argument wykonywanej funkcji i pobierać następnego rozkazu. Zwiększa ta szybkość pracy. Rysunek \ref{Fig:harvard} przedstawia schemat blokowy tej architektury.\\
+			Architektura Harvardzka to rodzaj architektury komputera. Posiada ona dwie oddzielne szyny dla danych i rozkazów. Można w tym samym czasie pobierać argument wykonywanej funkcji i pobierać następnego rozkazu. Zwiększa ta szybkość pracy. Rysunek \ref{Fig:harvard} przedstawia schemat blokowy tej architektury.\\
 \begin{samepage}
 			\captionof{figure}{Schemat blokowy architektury Harvardzkiej\label{Fig:harvard}}
 \nopagebreak
@@ -497,7 +499,7 @@ jalr x1, x2, 8
 \end{samepage}
 		\subsubsection{Peryferia}
 		\hspace{5mm}
-			\\W projekcie zostały dodane następujące peryferia:
+			W projekcie zostały dodane następujące peryferia:
 			\begin{enumerate}
 			\item RAM - pamięć o dostępnie swobodnym, jest to podstawowy rodzaj pamięci cyfrowej. Może być ona odczytywana i zmieniana w dowolnej kolejności. Służy ona do przechowywania danych i kodu maszynowego. W projekcie zaimplementowano pamięć jedno-portową i dwu-portową. Pamięć jedno-portowa posiada tylko jeden dane/adres port, więc może być czytana lub zapisywana w jednej chwili czasu. Pamięć dwu-portowa zawiera dwa dane/adres porty, więc może być czytana i zapisywana w jednej chwili czasu.\cite{ram_book}
 			\item SPI - interfejs służący do transmisji, głównie używany w systemach wbudowanych. Wykorzystuje się tryb \textit{master-slave}, dzięki temu jest zapewniona komunikacja full-duplex. Interfejs ten posiada następujące porty:
@@ -508,13 +510,12 @@ jalr x1, x2, 8
 			\item $\overline{SS}$ - \textit{Slave Select}
 			\end{itemize}
 			 By rozpocząć transmisje, \textit{Master} konfiguruje \textit{SCLK}, następnie ustawia stan niski na \textit{SS} w celu wybrania odpowiedniego \textit{Slave'a}. \textit{Master} wysyła bit poprzez \textit{MOSI} i \textit{slave'a} odczytuje go i wysyła bit poprzez \textit{MISO}. Rysunek \ref{Fig:spi} obrazuję przebieg transmisji\cite{spi_book}.
-			 \begin{samepage}
+			\begin{minipage}{\textwidth}
 				\captionof{figure}{Przykład transmisji SPI\label{Fig:spi}}
-				\nopagebreak
 				\begin{center}
 					\includegraphics[width=13cm]{./rysunki/spi.png}
 				\end{center}
-			\end{samepage}
+			\end{minipage}
 			
 			\item I2C - magistrala szeregowa, dwukierunkowa, synchroniczna służąca do komunikacji. Wykorzystuje tryb \textit{master-slave}. Posiada dwa porty:
 			\begin{itemize}
@@ -537,20 +538,20 @@ jalr x1, x2, 8
 					\includegraphics[width=13cm]{./rysunki/uart_frame.png}
 				\end{center}
 			\end{samepage}
-			\item GPIO - piny służące do komunikacja między mikroprocesorem a peryferiami \cite{gpio_doc}
+			\item GPIO - wyprowadzenia służące do komunikacja między mikroprocesorem a peryferiami \cite{gpio_doc}
 			\item Timer
 			\end{enumerate}
 
 		\subsubsection{Wishbone}
 		\hspace{5mm}
-			\\Wishobone to opensource magistrala służąca do łączenia ze sobą wielu IP w systemie \textit{master/slave}. Rysunek \ref{Fig:wishbone} przedstawia połączenia w tym interfejsie.
-			\begin{samepage}
+			Wishobone to opensource magistrala służąca do łączenia ze sobą wielu IP w systemie \textit{master/slave}. Rysunek \ref{Fig:wishbone} przedstawia połączenia w tym interfejsie.\\
+			\begin{minipage}{\textwidth}
 				\captionof{figure}{Wishbone master/slave interfejs\cite{wishbone_b4}\label{Fig:wishbone}}
 				\nopagebreak
 				\begin{center}
 					\includegraphics[width=10cm]{./rysunki/wishbone.png}
 				\end{center}
-			\end{samepage}
+			\end{minipage}
 			Podczas implementacji tej magistrali należy trzymać się zasad które definiuje standard:
 			\begin{itemize}
 				\item Wszystkie sygnały interfejsu muszą być aktywne w wysokim stanie
@@ -589,27 +590,27 @@ jalr x1, x2, 8
 		W celu rozpoznania odpowiedniego \textit{slave'a} przypisuje im się adresy. Adresy te tworzą mapę, szczegółowy opis tejże mapy znajduje się w rozdziale 3.2.
 	\subsection{Ibex}
 	\hspace{5mm}
-		\\Ibex jest to mikroprocesor tworzony przez organizację \textit{LowRISC}. Jest on dwupotokowy:
+		Ibex jest to mikroprocesor tworzony przez organizację \textit{LowRISC}. Jest on dwupotokowy:
 \begin{enumerate}
 	\item Pobieranie instrukcji - pobiera instrukcje z pamięci.
 	\item Dekodowanie i wykonanie instrukcji - zdekodowanie pobranej instrukcji i natychmiastowe jej wykonanie
 \end{enumerate}		
 		 Implementuje on \textit{ISA RV32IMC}. Wspiera on również rozszerzenie \textit{E} i eksperymentalne \textit{B}. Można je włączyć poprzez prawidłowe ustawienie parametrów\cite{ibex_doc}. Mikroprocesor ma szeroko rozwiniętą weryfikacje, wykorzystuje on między innymi generator rozkazów \textit{RISCV-DV}. Jest on również częścią projektu \textit{OpenTitan}, jest to \textit{RoT}, wspierany między innymi przez \textit{Google}\cite{google_opentitan}.
-		Rysunek \ref{Fig:ibex_block} przedstawia schemat blokowy mikroprocesora \textit{Ibex}\cite{ibex_doc}.
-			\begin{samepage}
+		Rysunek \ref{Fig:ibex_block} przedstawia schemat blokowy mikroprocesora \textit{Ibex}\cite{ibex_doc}.\\
+			\begin{minipage}{\textwidth}
 				\captionof{figure}{Schemat blokowy mikroprocesora\label{Fig:ibex_block}}
 				\nopagebreak
 				\begin{center}
 					\includegraphics[width=14cm]{./rysunki/blockdiagram.png}
 				\end{center}
-			\end{samepage}
+			\end{minipage}
 	\subsection{Kompilator}
 		\subsubsection{Budowanie toolchaina}
 		\hspace{5mm}
-			\\Toolchain można pobrać z oficjalnego repozytorium \textit{RISC-V}\cite{toolchain}. By zbudować kompatibilną wersję kompilatora dla mikroprocesora \textit{Ibex}, należy do konfiguracji podać argumenty \textit{--with-abi=ilp32 --with-arch=rv32imc --with-cmodel=medany} lub skorzystać z \textit{--multilib}. Opcja ta spowoduje zbudowanie kompilatora dla 64bit, lecz po podaniu odpowiednich argumentów podczas kompilacji programu wspiera również architektury 32bit.
+			Toolchain można pobrać z oficjalnego repozytorium \textit{RISC-V}\cite{toolchain}. By zbudować kompatibilną wersję kompilatora dla mikroprocesora \textit{Ibex}, należy do konfiguracji podać argumenty \textit{--with-abi=ilp32 --with-arch=rv32imc --with-cmodel=medany} lub skorzystać z \textit{--multilib}. Opcja ta spowoduje zbudowanie kompilatora dla 64bit, lecz po podaniu odpowiednich argumentów podczas kompilacji programu wspiera również architektury 32bit.
 		\subsubsection{Przykładowa kompilacja}
 		\hspace{5mm}
-			\\By skompilować przykładowy program dla mikroprocesora 
+			By skompilować przykładowy program dla mikroprocesora 
 			\textit{Ibex} należy użyć następujących komend: \\
 \code{riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib -nostartfiles -Wall -g -Os -MMD -c  -o led.o led.c
 riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib -nostartfiles -Wall -g -Os -MMD -c  -o crt0.o crt0.S
@@ -623,7 +624,7 @@ Pierwsze dwie komendy tworzą biblioteki, trzecia komenda spaja ze sobą potrzeb
 
 		\subsubsection{UVM}
 		\hspace{5mm}
-			\\UVM jest to biblioteka oparta na języku \textit{SystemVerilog} służąca do tworzenia testów weryfikacyjnych. UVM zawiera bazowe klasy z metodami, które pomagają w weryfikacji. Ważniejsze klasy bazowe biblioteki:
+			UVM jest to biblioteka oparta na języku \textit{SystemVerilog} służąca do tworzenia testów weryfikacyjnych. UVM zawiera bazowe klasy z metodami, które pomagają w weryfikacji. Ważniejsze klasy bazowe biblioteki:
 			\begin{enumerate}
 				\item uvm\_object - podstawowa klasa bazowa, zawierająca metody: \textit{create, copy, clone, compare, print, record}. Zazwyczaj używana do budowy testbenchu i konfiguracji testcase'u
 				\item uvm\_component - wszystkie komponenty testbenchu takie jak \textit{scoreboards, monitor, driver} pochodzą z tej klasy.
@@ -650,11 +651,11 @@ UVM test składa się z następujących elementów:
 			\end{samepage}
 		\subsubsection{RISCV DV}
 		\hspace{5mm}
-			\\RISCV-DV - narzędzie/IP służące do generacji programów w języku assembler do testowania danych aspektów procesora. Współpracuje z ISA: \textit{RV32IMAFDC, RV64IMAFDC}. Programy są tworzone losowo. By korzystać z tego nardzędzia/IP należy posiadać symulator wspierający UVM, na przykład: Riviera-PRO \cite{google_dv}.
+			RISCV-DV - narzędzie/IP służące do generacji programów w języku assembler do testowania danych aspektów procesora. Współpracuje z ISA: \textit{RV32IMAFDC, RV64IMAFDC}. Programy są tworzone losowo. By korzystać z tego nardzędzia/IP należy posiadać symulator wspierający UVM, na przykład: Riviera-PRO \cite{google_dv}.
 
 	\subsection{FPGA}
 	\hspace{5mm}
-		\\SoC będzie działać na płytce NEXYS4 DDR wyposażony w programowalny układ logiczny Artix-7 XC7A100T-1CSG324C. Ważniejsze zasoby płytki:\cite{nexys}
+		SoC będzie działać na płytce NEXYS4 DDR wyposażony w programowalny układ logiczny Artix-7 XC7A100T-1CSG324C. Ważniejsze zasoby płytki:\cite{nexys}
 		\begin{itemize}
 			\item 15850 plastrów logicznych, każdy złożony z czterech elementów LUT o 6-wejściach i 8 przerzutników
 			\item Pojemność 4860 kb szybkiego bloku pamięci RAM
@@ -669,21 +670,22 @@ UVM test składa się z następujących elementów:
 
 	\subsection{SystemVerilog}
 	\hspace{5mm}
-		\\Język opisu sprzętu, jest rozszerzeniem języka Verilog. Dodaje on nowe typy danych: \textit{logic, enum, byte, shortint, int, longint, struct, union}, wielowymiarowe tablice. Dodano również nowe bloki proceduralne: \textit{always\_comb, always\_latch, always\_ff}. Wprowadzono interfejsy wraz z \textit{modportami}, pomagają one zapanować nad portami w projekcie. Udoskonalono weryfikację poprzez dodanie nowego typu danych: \textit{string}, klas, asercji oraz \textit{constrained random generation} pozwalający narzucić ograniczenia podczas randomizacji.\cite{SV}
+		Język opisu sprzętu, jest rozszerzeniem języka Verilog. Dodaje on nowe typy danych: \textit{logic, enum, byte, shortint, int, longint, struct, union}, wielowymiarowe tablice. Dodano również nowe bloki proceduralne: \textit{always\_comb, always\_latch, always\_ff}. Wprowadzono interfejsy wraz z \textit{modportami}, pomagają one zapanować nad portami w projekcie. Udoskonalono weryfikację poprzez dodanie nowego typu danych: \textit{string}, klas, asercji oraz \textit{constrained random generation} pozwalający narzucić ograniczenia podczas randomizacji.\cite{SV}
 			
 			\subsubsection{Xilinx Vivado Design Suite}
 			\hspace{5mm}
-				\\Vivado Design Suite - oprogramowanie firmy Xilinx dla syntezy i analizy projektów HDL. Posiada wbudowany symulator \textit{ISIM} oraz \textit{Vivado IP Integrator} pozwalający na szybkie zarządzanie IP.
+				Vivado Design Suite - oprogramowanie firmy Xilinx dla syntezy i analizy projektów HDL. Posiada wbudowany symulator \textit{ISIM} oraz \textit{Vivado IP Integrator} pozwalający na szybkie zarządzanie IP.
 				
 			\subsubsection{Aldec Riviera-PRO}
 			\hspace{5mm}
-				\\Riviera-PRO komercyjny symulator HDL firmy Aldec. Obsługuje on bibliotekę UVM, randomizacje, asercje oraz może być wykorzystany do generacji programów assembler w celu weryfikacji działania SoCa.
+				Riviera-PRO komercyjny symulator HDL firmy Aldec. Obsługuje on bibliotekę UVM, randomizacje, asercje oraz może być wykorzystany do generacji programów assembler w celu weryfikacji działania SoCa.
 				
 \newpage
 
 \section{Implementacja}
 
-	\subsection{SoC}
+	\subsection{System na czipie}
+	\hspace{5mm}
 	Modułem głównym projektu jest \textit{ibex\_soc}. Nazwy jego portów, parametru i ich przeznaczenie zostały przedstawione w tabeli \ref{Tab:soc_ports}
 
 			\begin{center}
@@ -769,10 +771,40 @@ Tabela \ref{Tab:instancje_soc} przedstawia nazwy modułów i odpowiadające im i
 					\hline													
 				\end{tabular}
 		\end{center}
-Szczegółowy opis powyższych modułów znajduje się w kolejnym podrozdziałach. 
+
+Szczegółowy opis powyższych modułów znajduje się w kolejnych podrozdziałach. 
+Moduł ten importuje również paczkę z mapą pamięci. Są w niej zdefiniowane parametry opisujące adres bazowy jak i rozmiar. Listing \ref{Lis:memory-map} przedstawia te parametry.
+
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:memory-map,caption=Mapa pamięci]
+package addr_map_pkg;
+
+	parameter NUM_MASTER = 2;
+	parameter NUM_SLAVE = 7;
+	parameter RAM_INSTR_BASE_ADDR   = 'h00000000;
+	parameter RAM_INSTR_SIZE        = 'h10000;
+	parameter RAM_DATA_BASE_ADDR    = 'h00100000;
+	parameter RAM_DATA_SIZE         = 'h10000;
+	parameter LED_BASE_ADDR         = 'h10000000;
+	parameter LED_SIZE              = 'h0fff;
+	parameter UART_BASE_ADDR        = 'h10001000;
+	parameter UART_SIZE             = 'h0fff;
+	parameter I2C_BASE_ADDR         = 'h10002000;
+	parameter I2C_SIZE              = 'h0fff;
+	parameter SPI_BASE_ADDR         = 'h10003000;
+	parameter SPI_SIZE              = 'h0fff;
+	parameter TIMER_BASE_ADDR       = 'h10004000;
+	parameter TIMER_SIZE            = 'h0fff;
+
+endpackage
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Parametr \textit{NUM\_MASTER} definiuje ilość \textit{masterów} w projekcie. Są dwa, pierwszy przeznaczony dla linii danych rdzenia, drugi przeznaczony dla linii instrukcji rdzenia. Parametr \textit{NUM\_SLAVE} definiuje ilość użytych peryferii. Parametry te służą również do określenia wielkości tablic instancji interfejsu \textit{wishbone\_if}.
 	\subsection{Ibex}
-	\hspace{5mm}
 	\subsubsection{\textit{Ibex wishbone}}
+	\hspace{5mm}
 		Głównym modułem rdzenia jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wishbone}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Zostały w nim zainicjowane następujące moduły/interfejsy:
 \begin{itemize}
 	\item \textit{data\_core} - interfejs \textit{ibex\_if} z sygnałami danych.
@@ -784,12 +816,15 @@ Szczegółowy opis powyższych modułów znajduje się w kolejnym podrozdziałac
 Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusić stan niski na sygnałach: \textit{we}, \textit{be} i \textit{wdata} w celu zabezpieczenia przypadkowego zapisu w pamięci instrukcji.
 			
 	\subsubsection{\textit{Data core} i \textit{Instr core}}
-\textit{Data\_core} i \textit{instr\_core} są to instancje interfejsu \textit{ibex\_if}. Są w nich zdefiniowane sygnały pochodzące z linii instrukcji i linii danych. Interfejs ten zawiera w sobie dwa modporty: \textit{master} i \textit{slave}. W zależności od potrzeby możemy odczytywać wartości sygnałów używając modportu \textit{slave}, modport \textit{master} daje możliwość zapisywania wartości sygnałów. Tabela \ref{Tab:interface_port} przedstawia listę sygnałów wraz z ich kierunkami w zależności od używanego modportu.
+	\hspace{5mm}
+\textit{Data\_core} i \textit{instr\_core} są to instancje interfejsu \textit{ibex\_if}. Są w nich zdefiniowane sygnały pochodzące z linii instrukcji i linii danych. Interfejs ten zawiera w sobie dwa modporty: \textit{master} i \textit{slave}. W zależności od potrzeby możemy odczytywać wartości sygnałów używając modportu \textit{slave}, modport \textit{master} daje możliwość zapisywania wartości sygnałów. \mbox{Tabela \ref{Tab:interface_port}} przedstawia listę sygnałów wraz z ich kierunkami w zależności od używanego modportu.
+
+\begin{minipage}{\textwidth}
 \begin{center}
 			\captionof{table}{Porty i parametry modułu \textit{ibex\_soc}\label{Tab:interface_port}}\small
 				\begin{tabular}{|c|c|c|c|}
 					\hline
-					\multicolumn{2}{|c|}{Kierunek portu} & \multirow{2}{*}{Nazwa portu} & \multirow{2}{*}{Przeznaczenie}\\
+					\multicolumn{2}{|c|}{Kierunek wyprowadzenia} & \multirow{2}{*}{Nazwa wyprowadzenia} & \multirow{2}{*}{Przeznaczenie}\\
 					\cline{1-2}
 					Modport master & Modport slave & & \\ 
 					\hline
@@ -817,7 +852,9 @@ Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusi�
 					\hline
 				\end{tabular}
 		\end{center}
+		\end{minipage}
 	\subsubsection{\textit{Ibex core}}
+	\hspace{5mm}
 		Moduł \textit{ibex\_core} został zainjonowany jako \textit{u\_core}. Zawiera on w sobie wszystkie submoduły rdzenia,a są to:
 \begin{itemize}
 	\item \textit{Clock gating} - moduł zawierający bufor sygnału zegarowego.
@@ -853,12 +890,161 @@ Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusi�
 	\item \textit{Control and Status Registers} - zawiera rejestry kontrolne i statusu.
 \end{itemize}
 		 
-		
+		\subsubsection{Komunikacja rdzenia z magistralą \textit{Wishbone}}
+\hspace{5mm}
+Instancje \textit{data\_core2wb} i \textit{instr\_core2wb} modułu \textit{ibex\_to\_wb} są odpowiedzialne za komunikację rdzenia z magistralą. Moduł ten posiada dwa porty:
+\begin{enumerate}
+	\item \textit{core} - modport \textit{slave} pochodzący z interfejsu \textit{ibex\_if}. Dla instancji \textit{data\_core2wb} została przypisana instancja \textit{data\_core}, dla instancja \textit{instr\_core2wb} została przypisana instancja \textit{insftr\_core}.
+	\item \textit{wb} - modport \textit{master} pochodzący z interfejsu \textit{wishbone\_if}. Dla instancji \textit{data\_core2wb} została przypisana instancja \textit{data\_wb}. Dla instancji \textit{instr\_core2wb} została przypisana instancja \textit{instr\_wb}.
+\end{enumerate}
+W module tym zostało wykorzystane przypisanie ciągłe w celu przekazania wartości sygnałów. Listing \ref{Lis:ibex-2-wb} przedstawia te przypisania.\\
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:ibex-2-wb,caption=Przypisanie ciągłe modułu \it ibex\_to\_wb]
+	assign core.gnt    = core.req & ~wb.stall;
+	assign core.rvalid = wb.ack;
+	assign core.err    = wb.err;
+	assign core.rdata  = wb.data_s;
+	assign wb.stb      = core.req;
+	assign wb.addr     = core.addr;
+	assign wb.data_m   = core.wdata;
+	assign wb.we       = core.we;
+	assign wb.sel      = core.we ? core.be : '1;
 
+	always_ff @(posedge wb.clk_i or posedge wb.rst_ni)
+		if (!wb.rst_ni)
+			cyc <= 1'b0;
+		else
+		if (core.req)
+			cyc <= 1'b1;
+		else if (wb.ack || wb.err)
+			cyc <= 1'b0;
+
+	assign wb.cyc = core.req | cyc;}
+\end{lstlisting}
+
+\end{scriptsize}
+\end{minipage}
+Dzięki temu zabiegowi, każda zmiana sygnału zostanie przeniesiona na magistralę \textit{Wishbone}.
 	\subsection{Wishbone}
 	\hspace{5mm}
-		\\opis interfejsów które dodałem, jak działa sharebus, połączenia między wszystkim
-		
+Magistrala \textit{Wishbone} składa się z następujących komponentów:
+\begin{itemize}
+\item Instancje interfejsu \textit{wishbone\_if}: \textit{wb\_master} i \textit{wb\_slave},
+\item instancji modułu \textit{wishbone\_sharedbus}: \textit{wb\_share\_bus},
+\item modułów służących do podłączenia komponentów systemu na czipie do magistrali:
+	\begin{itemize}
+		\item \textit{wb\_gpio} - moduł łączący GPIO z magistralą,
+		\item \textit{wb\_uart} - moduł łączącu UART z magistralą,
+		\item \textit{wb\_i2c} - moduł łączący I2C z magistralą,
+		\item \textit{wb\_spi\_master} - moduł łączący SPI master z magistralą,
+		\item \textit{wb\_spi\_slave} - moduł łączący SPI slave z magistralą,
+		\item \textit{wb\_timer} - moduł łączący timer z magistralą,
+		\item \textit{wb\_ram} - moduł łączący pamięć RAM z magistralą.
+	\end{itemize}
+\end{itemize}
+\subsubsection{Interfejs magistrali \textit{Wishbone}}
+Interfejs magistrali posiada dwie instancje:
+\begin{itemize}
+\item \textit{wb\_master} - tablica interfejsu, wielkość tej tablicy definiowana jest przez parametr \textit{NUM\_MASTER}. Jest ona przeznaczona dla urządzeń typu \textit{master},
+\item \textit{wb\_slave} - tablica interfejsu, wielkość tej tablicy definiowana jest przez parametr \textit{NUM\_SLAVE}. Jest ona przeznaczona dla urządzeń typu \textit{slave}.
+ \end{itemize}
+ W celu zarządzania kierunkami sygnałów, zostały utworzone dwa modporty: \textit{master} i \textit{slave}. Wyprowadzenia oraz ich przeznaczenie zostały opisane w tabeli \ref{Tab:wb_if}.
+ \\
+ \begin{minipage}{\textwidth}
+		 \begin{center}
+			\captionof{table}{Sygnały interfejsu \textit{wishbone\_if}\label{Tab:wb_if}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					\multicolumn{2}{|c|}{Kierunek sygnału} & \multirow{2}{*}{Nazwa sygnału} & \multirow{2}{*}{Przeznaczenie}\\
+					\cline{1-2}
+					Modport master & Modport slave & & \\ 
+					\hline
+					input & input & clk\_i & sygnał zegarowy \\
+					\hline
+					input & input & rst\_ni & sygnał resetu \\
+					\hline
+					output & input & addr & sygnał adresu\\
+					\hline
+					output & input & data\_m & sygnał danych mastera\\
+					\hline
+					input & output & data\_s & sygnał danych slave'a\\
+					\hline
+					output & input & we & zezwolenie zapisu\\
+					\hline
+					output & input & sel & selekcja bajtu\\
+					\hline
+					output & input & stb & potwierdzenie nadania danych\\
+					\hline
+					input & output & ack & potwierdzenie przyjęcia danych\\
+					\hline
+					output & input & cyc & cykl magistrali\\
+					\hline
+					input & output & err & sygnał błędu\\
+					\hline
+					input & output & stall & sygnał zajętości\\
+					\hline
+				\end{tabular}
+		\end{center}
+		\end{minipage}
+		\subsubsection{Połączenia magistrali \textit{Wishbone}}
+		\hspace{5mm}
+		W celu komunikacji urządzeń typu \textit{slave} z urządzeniami typu \textit{master} należało przygotować odpowiedni moduł, kontrolujący tę komunikację. Jest on parametryzowany:
+		\begin{itemize}
+		\item \textit{num\_master = -1} - określa liczbę urządzeń typu \textit{master},
+		\item \textit{num\_slave = -1} - określa liczbę urządzeń typu \textit{slave},
+		\item \textit{bit [31:0] base\_addr[num\_slave] = '\{-1\}} - tablica adresów początkowych urządzeń typu \textit{slave}. Jej szerokość definiowana jest poprzez parametr \textit{num\_slave}, każde jej pole to liczba całkowita 32bitowa.
+		\item \textit{bit [31:0] size[num\_slave] = '\{-1\} } - tablica szerokości adresu pod jakim znajduje się urządzenie typu \textit{slave}. Jej szerokość definiowana jest poprzez parametr \textit{num\_slave}, każde jej pole to liczba całkowita 32bitowa.
+		\end{itemize}		 
+		Wartość domyślna parametrów to $-1$, ma to uchronić przed złym przypisaniem wartości podczas inicjalizacji tego modułu. Lista portów tego modułu składa się z dwóch modportów:
+		\begin{itemize}
+			\item \textit{wishbone\_if.slave wb\_master[num\_master]} - port przeznaczony dla odczytu informacji z urządzeń typu \textit{master}. Został użyty modport \textit{slave} w celu zabezpieczenia przed przypadkowym nadpisaniem sygnałów.
+			\item \textit{wishbone\_if.master wb\_slave[num\_slave]} - port przeznaczony do odczytu informacji z urządzeń typu \textit{slave}. Został użyty modport \textit{master} w celu zabezpieczenia przed przypadkowym nadpisaniem sygnałów.
+		\end{itemize}
+		Przykładowa inicjalizacja modułu została pokazana na Listingu \ref{Lis:shared_bus}. Kolejność parametrów podanych do przypisania tablicy \textit{base\_addr} i \textit{size} musi się zgadzać z indeksem przypisanym dla poszczególnego komponentu. \\
+		\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:shared_bus,caption=Przykładowa inicjalizacja modułu \textit{wishbone\_sharedbus}]
+	wishbone_sharedbus
+	#(	.num_master      (NUM_MASTER),
+		.num_slave      (NUM_SLAVE),
+		.base_addr ('{RAM_INSTR_BASE_ADDR,RAM_DATA_BASE_ADDR, GPIO_BASE_ADDR,
+		 UART_BASE_ADDR, I2C_BASE_ADDR, SPI_BASE_ADDR, TIMER_BASE_ADDR}),
+		.size      ('{RAM_INSTR_SIZE, RAM_DATA_SIZE, GPIO_SIZE, UART_SIZE,
+		 I2C_SIZE, SPI_SIZE, TIMER_SIZE}))       
+	wb_share_bus(
+		.wb_master(wb_master),
+		.wb_slave(wb_slave));
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+\\
+		Dla sygnałów pochodzących z urządzeń zostały utworzone pomocnicze tablice zmiennych tymczasowych. Szerokość tych tablic definiują parametry \textit{num\_master} i \textit{num\_slave}. Zdefiniowane zostały również sygnały wspólne, mające na celu przekazywanie wartości między komponentami.\\
+		W pierwszym kroku należy odczytać/przypisać wartości dla danych modportów. Listing \ref{Lis:przypisanie_sharedbus} przedstawia tą operację.\\
+				\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:przypisanie_sharedbus,caption=Przykładowa inicjalizacja modułu \textit{wishbone\_sharedbus}]
+    for (genvar i = 0; i < num_master; i++)
+        begin
+            assign wb_master_cyc[i] = wb_master[i].cyc;
+            .
+            .
+            .
+            assign wb_master[i].ack = wb_master_ack[i];            
+         end
+
+        for (genvar i = 0; i < num_slave; i++)
+        begin
+            assign wb_slave[i].cyc = wb_slave_cyc[i];
+            .
+            .
+            .            
+            assign wb_slave_ack[i] = wb_slave[i].ack;            
+         end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Pętla \textit{for} z użyciem zmiennej typu \textit{genvar} pozwala tworzyć bloki generyczne. Dzięki nim i przypisaniu ciągłemu wartości poszczególnych sygnałów zawsze zostaną przypisane gdy nastąpi ich zmiana.
 	\subsection{RAM}
 	\hspace{5mm}
 		\\cos o ram
