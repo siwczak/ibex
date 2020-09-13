@@ -22,6 +22,9 @@ sources:
   - i2c/i2c_master_top.sv
   #ram
   - ram/1p_ram.sv
+  - ram/2p_ram.sv
+  #gpio
+  - gpio/gpio.sv
   #spi
   - spi/fifo.sv
   - spi/spi_master.sv
@@ -41,6 +44,7 @@ sources:
   - ibex/ibex_wb.sv
   - wishbone/slave_to_wb.sv
   - wishbone/wb_1p_ram.sv
+  - wishbone/wb_2p_ram.sv
   - wishbone/wb_i2c_master.sv
   - wishbone/wb_led.sv
   - wishbone/wb_spi_master.sv

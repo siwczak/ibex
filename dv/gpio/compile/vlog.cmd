@@ -1,0 +1,1 @@
+ -o /home/siwy/mgr/simulation_rvr/dv/gpio/compile -lc /home/siwy/mgr/simulation_rvr/dv/gpio/library.cfg -fl /home/siwy/mgr/simulation_rvr/dv/gpio/library.cfg -pli /home/siwy/Aldec/Riviera-PRO-2020.04-x64/bin/libsystf.so -dbg -uvm top.sv seq_item.sv seq.sv driver.sv monitor.sv agent.sv scoreboard.sv env.sv base_test.sv gpio_if.sv ../../gpio/gpio.sv

@@ -102,7 +102,7 @@ module wishbone_sharedbus#(
      //////////addres for slave/////////
      always_comb
         for (int i = 0; i < num_slave; i++)
-            ss[i] = (addr >= base_addr[i]) && (addr < base_addr[i] + size[i]);
+            ss[i] = addr inside {[base_addr[i]:(base_addr[i]+size[i])]};
             
      always_ff @(posedge wb_slave[0].clk_i or posedge wb_slave[0].rst_ni)
         if (!wb_slave[0].rst_ni)

@@ -16,3 +16,5 @@ TAGS
 *.cfg
 *.asdb
 /compile/
+dv/compile/
+dv/work/

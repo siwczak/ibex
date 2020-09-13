@@ -7,12 +7,12 @@ import i2c_package::*;
 		input arst_i,
 		input [2:0] wb_adr_i,
 		input [7:0] wb_dat_i,
-		output [7:0] wb_dat_o,
+		output reg [7:0] wb_dat_o,
 		input wb_we_i,
 		input wb_stb_i,
 		input wb_cyc_i,
-		output wb_ack_o,
-		output wb_inta_o,
+		output reg wb_ack_o,
+		output reg wb_inta_o,
 		//I2C SIGNAL
 		input scl_pad_i,
 		output scl_pad_o,
@@ -25,9 +25,8 @@ import i2c_package::*;
 	parameter ARST_LVL = 1'b1; // asynchronous reset level
 	parameter [6:0] DEFAULT_SLAVE_ADDR  = 7'b111_1110;
 
-	reg [7:0] wb_dat_o;
-	reg wb_ack_o;
-	reg wb_inta_o;
+
+
 
 	//
 	// variable declarations

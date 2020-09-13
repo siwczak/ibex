@@ -20,23 +20,28 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module wb_led(
+module wb_gpio(
     output logic [3:0] led,
+    input logic [3:0] button,
     wishbone_if.slave wb
     );
     
     logic valid;
-    logic select;
-    
-    always @(posedge wb.clk_i or posedge wb.rst_ni)
-        if (!wb.rst_ni)
-            led <= '0;
-        else
-            if (valid && wb.we && select)
-                led <= wb.data_m[3:0];
+    logic select_led;
+    logic select_but;
+    bit [3:0] data_s;
+	gpio gpio(.clk_i(wb.clk_i),.rst_ni(wb.rst_ni),.led(led), .button(button),.valid(valid),.data_s(data_s),.data_m(wb.data_m[3:0]) ,.sel_led(select_led),.sel_but(select_but),.we(wb.we));
+	
+//    always @(posedge wb.clk_i or posedge wb.rst_ni)
+//        if (!wb.rst_ni)
+//            led <= '0;
+//        else
+//            if (valid && wb.we && select_led)
+//                led <= wb.data_m[3:0];
                 
    assign valid    = wb.cyc & wb.stb;
-   assign select   = wb.addr[11:2] == 0;
+   assign select_led   = wb.addr[11:2] == 0;
+   assign select_but   = wb.addr[11:2] == 1;
    assign wb.stall = 1'b0;
    assign wb.err   = 1'b0;
 
@@ -46,6 +51,6 @@ module wb_led(
      else
        wb.ack <= valid & ~wb.stall;
 
-   assign wb.data_s = {28'h0000000, led};          
+   assign wb.data_s = {28'h0000000, data_s};          
     
 endmodule

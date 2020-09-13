@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 `define _SIM
-module clkgen_xil7series (
+module clkgen (
     input IO_CLK,
     input IO_RST_N,
     output clk_sys,

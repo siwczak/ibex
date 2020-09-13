@@ -4,6 +4,7 @@ import addr_map_pkg::*;
 		input                    I_CLK,
 		input                    I_RST_N,
 		output [3:0]             O_LED,
+		input [3:0]             I_BUTTON,
 		input                    I_UART_RX,
 		output                   O_UART_TX,
 		inout                    IO_SDA,
@@ -24,7 +25,7 @@ import addr_map_pkg::*;
 	logic [15-1:0] irq_fast;
 	logic [8-1:0] isp_data;
 	// Clock and reset
-	clkgen_xil7series
+	clkgen
 	clkgen(
 		.IO_CLK(I_CLK),
 		.IO_RST_N(I_RST_N),
@@ -34,7 +35,7 @@ import addr_map_pkg::*;
 
 	/////////////////wishbone/////////////////
 	wishbone_if wb_master[NUM_MASTER](.clk_i(clk_sys),.rst_ni(rst_sys_n)); //0 for data, 1 for instr
-	wishbone_if wb_slave[NUM_SLAVE](.clk_i(clk_sys),.rst_ni(rst_sys_n)) ; //0-ram,1-gpio,2-uart,3-i2c,4-spi,5-timer
+	wishbone_if wb_slave[NUM_SLAVE](.clk_i(clk_sys),.rst_ni(rst_sys_n)) ; //0-ram,2-gpio,3-uart,4-i2c,5-spi,6-spi-slave,7-timer
 
 	//////////////////////ibex core////////////////////
 	ibex_wb ibex_wishbone (
@@ -60,13 +61,20 @@ import addr_map_pkg::*;
 	wishbone_sharedbus
 	#(.num_master      (NUM_MASTER),
 		.num_slave      (NUM_SLAVE),
-		.base_addr ('{RAM_INSTR_BASE_ADDR,RAM_DATA_BASE_ADDR, LED_BASE_ADDR, UART_BASE_ADDR, I2C_BASE_ADDR, SPI_BASE_ADDR, TIMER_BASE_ADDR}),
-		.size      ('{RAM_INSTR_SIZE, RAM_DATA_SIZE,LED_SIZE, UART_SIZE, I2C_SIZE, SPI_SIZE, TIMER_SIZE}))       
+		.base_addr ('{RAM_INSTR_BASE_ADDR,RAM_DATA_BASE_ADDR, LED_BASE_ADDR, UART_BASE_ADDR, I2C_BASE_ADDR, SPI_BASE_ADDR, TIMER_BASE_ADDR,SPI_SLAVE_BASE_ADDR}),
+		.size      ('{RAM_INSTR_SIZE, RAM_DATA_SIZE,LED_SIZE, UART_SIZE, I2C_SIZE, SPI_SIZE, TIMER_SIZE,SPI_SLAVE_SIZE}))       
 	wb_share_bus
-	(.wb_master(wb_master),
+	   (.wb_master(wb_master),
 		.wb_slave(wb_slave));
 
-
+`ifndef P2_RAM
+	wb_2p_ram_instr #(
+		.SIZE(RAM_INSTR_SIZE)
+	) ram_instr (
+		.wb_instr(wb_slave[0]),
+		.wb_data(wb_slave[1])
+	);
+`else
 	wb_1p_ram_instr #(
 		.SIZE(RAM_INSTR_SIZE)
 	) ram_instr (
@@ -78,10 +86,11 @@ import addr_map_pkg::*;
 	) ram_data (
 		.wb(wb_slave[1])
 	);
-
-	wb_led wb_led
+`endif
+	wb_gpio wb_gpio
 	(.wb(wb_slave[2]),
-		.led(O_LED));
+		.led(O_LED),
+		.button(I_BUTTON));
 
 	wb_uart wb_uart(
 		.wb(wb_slave[3]),
@@ -111,17 +120,12 @@ import addr_map_pkg::*;
 		.timer_irq_o(irq_timer)
 	);
 
-	spi_slave ISP(
-		.rst_ni(rst_sys_n),
-		.clk_i(clk_sys),
-		.rx_dv_o(isp_data_valid),
-		.rx_byte_o(isp_data),
-		.tx_dv_i(isp_data_valid),
-		.tx_byte_i(isp_data),
-		.spi_clk_i(I_SCK_ISP),
-		.miso_o(test),
-		.mosi_i(I_MOSI_ISP),
-		.cs_i(I_CS_ISP)
+	wb_spi_slave wb_spi_slave(
+		.miso_o(O_MISO),
+		.mosi_i(I_MOSI),
+		.sck_i(I_SCK),
+		.cs_i(I_CS),
+		.wb(wb_slave[7])
 	);
 
 	assign irq_fast = {14'd0,irq_spi};

@@ -612,13 +612,27 @@ jalr x1, x2, 8
 		\hspace{5mm}
 			By skompilować przykładowy program dla mikroprocesora 
 			\textit{Ibex} należy użyć następujących komend: \\
-\code{riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib -nostartfiles -Wall -g -Os -MMD -c  -o led.o led.c
-riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib -nostartfiles -Wall -g -Os -MMD -c  -o crt0.o crt0.S
-riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib -nostartfiles -Wall -g -Os -T link.ld led.o crt0.o -o led.elf 
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:kompilacja,caption=Przykładowa kompilacja]
+riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib \
+-nostartfiles -Wall -g -Os -MMD -c  -o led.o led.c
+
+riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib \
+-nostartfiles -Wall -g -Os -MMD -c  -o crt0.o crt0.S
+
+riscv32-unknown-elf-gcc -march=rv32imc -mabi=ilp32 -static -mcmodel=medany -nostdlib \
+-nostartfiles -Wall -g -Os -T link.ld led.o crt0.o -o led.elf 
+
 riscv32-unknown-elf-objcopy -O binary led.elf led.bin
-srec\_cat led.bin -binary -offset 0x0000 -byte-swap 4 -o led.vmem -vmem
-riscv32-unknown-elf-objdump -SD led.elf > led.dis
-riscv32-unknown-elf-objcopy -O verilog --interleave-width=4 --interleave=4 --byte=0 led.elf led.hex} ŁADNIE TO ZROBIĆ\\
+
+srec_cat led.bin -binary -offset 0x0000 -byte-swap 4 -o led.vmem -vmem
+
+riscv32-unknown-elf-objcopy -O verilog --interleave-width=4 \
+--interleave=4 --byte=0 led.elf led.hex
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
 Pierwsze dwie komendy tworzą biblioteki, trzecia komenda spaja ze sobą potrzebne biblioteki i konsolidatora i tworzy plik \textit{bin}. Następnie plik \textit{bin} jest konwertowany do plików \textit{vmem} i \textit{hex}.
 	\subsection{Weryfikacja}
 
@@ -1044,7 +1058,18 @@ Interfejs magistrali posiada dwie instancje:
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
-Pętla \textit{for} z użyciem zmiennej typu \textit{genvar} pozwala tworzyć bloki generyczne. Dzięki nim i przypisaniu ciągłemu wartości poszczególnych sygnałów zawsze zostaną przypisane gdy nastąpi ich zmiana.
+Pętla \textit{for} z użyciem zmiennej typu \textit{genvar} pozwala tworzyć bloki generyczne. Dzięki nim i przypisaniu ciągłemu wartości poszczególnych sygnałów zawsze zostaną przypisane gdy nastąpi ich zmiana.\\
+Wybór aktywnego urządzenia \textit{slave} jest dokonywany poprzez iterację po tablicy adresów i sprawdzenie poprzez operator \textit{inside} czy adres podany przez \textit{mastera} znajduje się w przestrzeni adresowej urządzenia \textit{slave}. Gdy jest to prawdą, operator zwróci jedynkę logiczną, która jest przypisywana do tablicy \textit{slave\_select} w komórkę odpowiadającej danemu urządzeniu \textit{slave}. Operacja ta została umieszczona w bloku proceduralnym \textit{always\_comb} więc przy każdej zmianie adresu operacja ta jest ponawiana. Listing \ref{Lis:slave_select} przedstawia ten proces.\\
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:slave_select,caption=Wybór urządzenia \textit{slave}]
+     always_comb
+        for (int i = 0; i < num_slave; i++)
+            ss[i] = addr inside {[base_addr[i]:(base_addr[i]+size[i])]};
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Informacja o wyborze danego urządzenia jest przekazywana za pomocą nie blokującego przypisania do tablicy \textit{slave\_select\_1} w celu zapewnienia potokowości. Następnie w bloku proceduralnym \textit{always\_comb} dane są przekazywane z urządzenia \textit{master} do komponentu \textit{slave}. 
 	\subsection{RAM}
 	\hspace{5mm}
 		\\cos o ram
