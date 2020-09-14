@@ -13,7 +13,7 @@ module wb_spi_slave(
     
     spi_slave spi_slave(
     .clk_i(wb.clk_i),
-    .rst_ni(wb.rst_ni),
+    .rst_i(~wb.rst_ni),
     .tx_dv_i(wb.we),
     .tx_byte_i(wb.data_m[8-1:0]),
     .rx_byte_o(data_out),

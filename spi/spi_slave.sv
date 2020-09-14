@@ -1,6 +1,6 @@
 module spi_slave  (
 	// Control/Data Signals,
-	input            rst_ni,    // FPGA Reset
+	input            rst_i,    // FPGA Reset
 	input            clk_i,      // FPGA Clock
 	output logic       rx_dv_o,    // Data Valid pulse (1 clock cycle)
 	output logic [7:0] rx_byte_o,  // Byte received on MOSI
@@ -31,7 +31,7 @@ module spi_slave  (
 	// Samples line on correct edge of SPI Clock
 	always @(posedge spi_clk_i or posedge cs_i)
 	begin
-		if (~rst_ni) begin
+		if (rst_i) begin
 			r_RX_Bit_Count <= 0;
 		end else
 		if (cs_i)
@@ -63,9 +63,9 @@ module spi_slave  (
 
 	// Purpose: Cross from SPI Clock Domain to main FPGA clock domain
 	// Assert o_RX_DV for 1 clock cycle when o_RX_Byte has valid data.
-	always @(posedge clk_i or negedge rst_ni)
+	always @(posedge clk_i or posedge rst_i)
 	begin
-		if (~rst_ni)
+		if (rst_i)
 		begin
 			r2_RX_Done <= 1'b0;
 			r3_RX_Done <= 1'b0;
@@ -113,7 +113,7 @@ module spi_slave  (
 	// Want to put data on the line immediately when CS goes low.
 	always @(posedge spi_clk_i or posedge cs_i)
 	begin
-		if (~rst_ni) begin
+		if (rst_i) begin
 			r_TX_Bit_Count = '0;
 			r_SPI_MISO_Bit = '0;
 		end
@@ -136,9 +136,9 @@ module spi_slave  (
 
 	// Purpose: Register TX Byte when DV pulse comes.  Keeps registed byte in 
 	// this module to get serialized and sent back to master.
-	always @(posedge clk_i or negedge rst_ni)
+	always @(posedge clk_i or posedge rst_i)
 	begin
-		if (~rst_ni)
+		if (rst_i)
 		begin
 			r_TX_Byte <= 8'h00;
 		end

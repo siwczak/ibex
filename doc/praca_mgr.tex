@@ -509,7 +509,7 @@ jalr x1, x2, 8
 			\item $MISO$ - \textit{Master In Slave Out}
 			\item $\overline{SS}$ - \textit{Slave Select}
 			\end{itemize}
-			 By rozpocząć transmisje, \textit{Master} konfiguruje \textit{SCLK}, następnie ustawia stan niski na \textit{SS} w celu wybrania odpowiedniego \textit{Slave'a}. \textit{Master} wysyła bit poprzez \textit{MOSI} i \textit{slave'a} odczytuje go i wysyła bit poprzez \textit{MISO}. Rysunek \ref{Fig:spi} obrazuję przebieg transmisji\cite{spi_book}.
+			 By rozpocząć transmisje, \textit{Master} konfiguruje \textit{SCLK}, następnie ustawia stan niski na \textit{SS} w celu wybrania odpowiedniego \textit{Slave'a}. \textit{Master} wysyła bit poprzez \textit{MOSI} i \textit{slave'a} odczytuje go i wysyła bit poprzez \textit{MISO}. Rysunek \ref{Fig:spi} obrazuję przebieg transmisji\cite{spi_book}.\\
 			\begin{minipage}{\textwidth}
 				\captionof{figure}{Przykład transmisji SPI\label{Fig:spi}}
 				\begin{center}
@@ -957,6 +957,13 @@ Magistrala \textit{Wishbone} składa się z następujących komponentów:
 		\item \textit{wb\_ram} - moduł łączący pamięć RAM z magistralą.
 	\end{itemize}
 \end{itemize}
+Rysunek \ref{Fig:wishbone_ibex} przedstawia porównanie komunikacji magistrali \textit{Wishbone} z komunikacją \textit{LSU} z pamięcią.
+
+			\begin{minipage}{\textwidth}
+				\captionof{figure}{Porównanie komunikacji Ibex z \textit{Wishbone}\label{Fig:wishbone_ibex}}
+					\includegraphics[width=14cm]{./rysunki/timing.png}
+			\end{minipage} 
+
 \subsubsection{Interfejs magistrali \textit{Wishbone}}
 Interfejs magistrali posiada dwie instancje:
 \begin{itemize}
@@ -1063,13 +1070,60 @@ Wybór aktywnego urządzenia \textit{slave} jest dokonywany poprzez iterację po
 \begin{minipage}{\textwidth}
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:slave_select,caption=Wybór urządzenia \textit{slave}]
-     always_comb
-        for (int i = 0; i < num_slave; i++)
-            ss[i] = addr inside {[base_addr[i]:(base_addr[i]+size[i])]};
+	always_comb
+		for (int i = 0; i < num_slave; i++)
+			ss[i] = addr inside {[base_addr[i]:(base_addr[i]+size[i])]};
+            
+	always_ff @(posedge wb_slave[0].clk_i or posedge wb_slave[0].rst_ni)
+		if (!wb_slave[0].rst_ni)
+			ss1 <= '0;
+		else
+		if (cyc && stb)
+			ss1 <= ss;
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
-Informacja o wyborze danego urządzenia jest przekazywana za pomocą nie blokującego przypisania do tablicy \textit{slave\_select\_1} w celu zapewnienia potokowości. Następnie w bloku proceduralnym \textit{always\_comb} dane są przekazywane z urządzenia \textit{master} do komponentu \textit{slave}. 
+Informacja o wyborze danego urządzenia jest przekazywana za pomocą nie blokującego przypisania do tablicy \textit{slave\_select\_1} w celu zapewnienia potokowości. Blok proceduralny \textit{always\_comb} zapewnia komunikacje między \textit{masterem} a urządzeniem \textit{slave}. Listing \ref{Lis:comb_comunitation} przedstawia ten zabieg.  \\
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:comb_comunitation,caption=Komunikacja urządzenia \textit{master} z urządzeniem \textit{slave}]
+	always_comb begin
+		ack    = 1'b0;
+		err    = 1'b0;
+		stall  = 1'b0;
+		data_rd = '0;
+		for (int i = 0; i < num_slave; i++) begin
+			ack   |= wb_slave_ack[i];
+			err   |= wb_slave_err[i];
+			stall |= wb_slave_stall[i];
+			wb_slave_cyc[i]   = cyc;
+			wb_slave_addr[i]   = '0;
+			wb_slave_stb[i]   = 1'b0;
+			wb_slave_we[i]    = we;
+			wb_slave_sel[i]   = '0;
+			wb_slave_data_o[i] = '0;
+			if (ss[i]) begin
+				wb_slave_addr[i]   = addr;
+				wb_slave_stb[i]   = cyc & stb;
+				wb_slave_sel[i]   = sel;
+				wb_slave_data_o[i] = data_wr;
+			end
+			if (ss1[i])
+				data_rd = wb_slave_data_i[i];
+		end
+	end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Jeśli urządzenie \textit{slave} zostało wybrane, przekazywane są do niego sygnały z urządzenia \textit{master} w kolejnym cyklu zegarowym dane są przypisywane do urządzenia \textit{master}.\\
+Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \textit{cyc} informujący o żądaniu mastera następuje zapisanie stanu wysokiego dla sygnału \textit{gnt}, w kolejnym cyklu zegarowym wartość ta jest przekazywana do \textit{gnt\_1} w celu zachowania potokowości. Gdy urządzenie \textit{master} jest gotowe do działania, zapisuje dane do sygnałów wspólnych, te przekazują je urządzeniu \textit{slave}. Potwierdzeniem udanej transmisji jest przekazanie sygnału \textit{ack} potwierdzającego odczyt danych przez peryferia i sygnału \textit{err}, który komunikuje o problemach.\\ Rysunek \ref{Fig:wishbone_timing} przedstawia przebiegi sygnałów tego modułu uzyskanych dzięki symulacji. Po otrzymaniu prawidłowego adresu sygnał \textit{ss} zmienił swój stan na wysoki, w kolejnym cylku zegarowym stan wysoki przyjmuje sygnał \textit{ss1} - co odpowiada opisowi. Pojawienie się jedynki logicznej w sygnale \textit{stb} spowodowało aktywację sygnału \textit{gnt} a z kolejnym cyklem zegarowym wartość ta zostaje przepisana na sygnał \textit{gnt1}. Wysoki stan \textit{ss} spowodował aktywację urządzenie \textit{slave}, można to zauważyć poprzez pojawienie się adresu na linii \textit{wb\_slave\_addr}, dzięki \textit{ss1} dane z linii \textit{wb\_slave\_data\_i[0]} zostały przekazane do \textit{data\_rd}, sygnał \textit{gnt\_1} pozwolił na zapis ich na linii \textit{wb\_master\_data\_o[1]} \\
+			\begin{minipage}{\textwidth}
+				\captionof{figure}{Przebiegi sygnałów podczas symulacji\label{Fig:wishbone_timing}}
+				\nopagebreak
+				\begin{center}
+					\includegraphics[height=16cm,width=14cm,keepaspectratio]{./rysunki/wishbone_timing.png}
+				\end{center}
+			\end{minipage} 
 	\subsection{RAM}
 	\hspace{5mm}
 		\\cos o ram

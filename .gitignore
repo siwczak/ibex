@@ -12,9 +12,15 @@ TAGS
 /doc/*.out
 *.lock
 *.do
+*.asdbw
+*.tmp
 /work/
 *.cfg
 *.asdb
+*.acdb
 /compile/
 dv/compile/
 dv/work/
+dv/uart/work/
+dv/uart/compile
+dv/uart/acdb_report.txt

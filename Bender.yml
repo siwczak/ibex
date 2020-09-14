@@ -30,15 +30,20 @@ sources:
   - spi/spi_master.sv
   - spi/spi_slave.sv
   #uart
-  - uart/uart_receiver.v
-  - uart/uart_regs.v
-  - uart/uart_rfifo.v
-  - uart/uart_sync_flops.v
-  - uart/uart_tfifo.v
-  - uart/uart_top.v
-  - uart/uart_transmitter.v
-  - uart/uart_wb.v
-  - uart/raminfr.v
+  #- uart/uart_receiver.v
+  #- uart/uart_regs.v
+  #- uart/uart_rfifo.v
+  #- uart/uart_sync_flops.v
+  #- uart/uart_tfifo.v
+  #- uart/uart_top.v
+  #- uart/uart_transmitter.v
+  #- uart/uart_wb.v
+  #- uart/raminfr.v
+  #uart_moj
+  - uart_moj/wb_uart.sv
+  - uart_moj/uart.sv
+  - uart_moj/uart_rx.sv
+  - uart_moj/uart_tx.sv
   #wishbone
   - wishbone/ibex_to_wb.sv
   - ibex/ibex_wb.sv
@@ -77,8 +82,23 @@ sources:
   - xilinx/prim_clock_gating.sv
   - soc/ibex_soc.sv
   
-  - target: test
+  - target: test_blink
     files:
       - dv/top.sv
 
+  - target: test_gpio
+    files:
+      - dv/top.sv
 
+  - target: test_uart
+    files:
+      - dv/uart/tb_uart.sv
+      - dv/uart/uart_seq_item.sv
+      - dv/uart/uart_seq.sv
+      - dv/uart/uart_driver.sv
+      - dv/uart/uart_mon.sv
+      - dv/uart/uart_cov.sv
+      - dv/uart/uart_agent.sv
+      - dv/uart/uart_env.sv
+      - dv/uart/uart_intf.sv
+      - dv/uart/uart_test.sv
