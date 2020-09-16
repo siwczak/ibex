@@ -1119,15 +1119,76 @@ Jeśli urządzenie \textit{slave} zostało wybrane, przekazywane są do niego sy
 Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \textit{cyc} informujący o żądaniu mastera następuje zapisanie stanu wysokiego dla sygnału \textit{gnt}, w kolejnym cyklu zegarowym wartość ta jest przekazywana do \textit{gnt\_1} w celu zachowania potokowości. Gdy urządzenie \textit{master} jest gotowe do działania, zapisuje dane do sygnałów wspólnych, te przekazują je urządzeniu \textit{slave}. Potwierdzeniem udanej transmisji jest przekazanie sygnału \textit{ack} potwierdzającego odczyt danych przez peryferia i sygnału \textit{err}, który komunikuje o problemach.\\ Rysunek \ref{Fig:wishbone_timing} przedstawia przebiegi sygnałów tego modułu uzyskanych dzięki symulacji. Po otrzymaniu prawidłowego adresu sygnał \textit{ss} zmienił swój stan na wysoki, w kolejnym cylku zegarowym stan wysoki przyjmuje sygnał \textit{ss1} - co odpowiada opisowi. Pojawienie się jedynki logicznej w sygnale \textit{stb} spowodowało aktywację sygnału \textit{gnt} a z kolejnym cyklem zegarowym wartość ta zostaje przepisana na sygnał \textit{gnt1}. Wysoki stan \textit{ss} spowodował aktywację urządzenie \textit{slave}, można to zauważyć poprzez pojawienie się adresu na linii \textit{wb\_slave\_addr}, dzięki \textit{ss1} dane z linii \textit{wb\_slave\_data\_i[0]} zostały przekazane do \textit{data\_rd}, sygnał \textit{gnt\_1} pozwolił na zapis ich na linii \textit{wb\_master\_data\_o[1]} \\
 			\begin{minipage}{\textwidth}
 				\captionof{figure}{Przebiegi sygnałów podczas symulacji\label{Fig:wishbone_timing}}
-				\nopagebreak
 				\begin{center}
 					\includegraphics[height=16cm,width=14cm,keepaspectratio]{./rysunki/wishbone_timing.png}
 				\end{center}
 			\end{minipage} 
-	\subsection{RAM}
-	\hspace{5mm}
-		\\cos o ram
+	\subsection{Pamięć RAM}
+		\subsubsection{Komunikacja pamięci z magistralą \textit{Wishbone}}
+			\hspace{5mm}
+			W celu poprawnej komunikacji z magistralą należało opisać moduł, którego zadaniem jest poprawna konwersja i przekazywanie sygnałów między magistralą a pamięcią \textit{RAM}. Moduł posiada parametr: \textit{SIZE}, informujący o pojemności tejże pamięci, oraz lokalny parametr:\textit{ADDR\_WIDTH} informujący o szerokości pola adresowego, powstaje on dzięki obliczeniu logarytmu o podstawie dwa z parametru \textit{SIZE}. Parametry te są dalej przekazywane dla modułów opisujących pamięć \textit{RAM}. Listing \ref{Lis:wb_ram} przedstawia komunikacje między pamięcią a magistralą.
+			Adres zostaje wybrany poprzez wybranie odpowiedniej części wektora \textit{addr}.  Sygnał \textit{valid} umożliwia zapis/odczyt z pamięci. Jest on aktywny gdy nadejdzie potwierdzenie nadania danych wraz z wysokim stanem sygnału cyklu magistrali. Pozwolenie na zapis danych jest równe koniunkcji sygnałów selekcji oraz powielonemu cztery razy pozwoleniu na zapis pochodzącego od rdzenia. Sygnały zajętości pamięci i błędu zostały podpięte do stanu niskiego ponieważ w modelu pamięci nie istnieje możliwość ich wystąpienia. \\
+			\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:wb_ram,caption=Komunikacja pamięci z magistralą]
+    assign ram_addr = wb.addr[ADDR_WIDTH-1:2];
+    assign ram_valid = valid;
+    assign ram_we = {4{wb.we}} & wb.sel;
+    assign ram_data_i = wb.data_m;
+    assign wb.data_s = ram_data_o;
+    assign valid = wb.cyc & wb.stb;
+    assign wb.stall = 1'b0;
+    assign wb.err = 1'b0;
+    
+    always_ff @(posedge wb.clk_i or posedge wb.rst_ni)
+        if (!wb.rst_ni)
+            wb.ack <= 1'b0;
+        else
+            wb.ack <= valid & ~wb.stall;
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+		\subsubsection{Pamięć jednoportowa}
+			\hspace{5mm}
+			Listing \ref{Lis:ram_1p} przedstawia opis modelu pamięci RAM.\\
+			\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:ram_1p,caption=Model pamięci RAM]
+    logic /*sparse*/ [31:0] mem [SIZE];
 
+   always @(posedge clk_i)
+     if (valid_i)
+       begin
+          if (we_i[0]) mem[addr_i][7:0]   <= data_i[7:0];
+          if (we_i[1]) mem[addr_i][15:8]  <= data_i[15:8];
+          if (we_i[2]) mem[addr_i][23:16] <= data_i[23:16];
+          if (we_i[3]) mem[addr_i][31:24] <= data_i[31:24];
+       end
+
+   always_ff @(posedge clk_i)
+     if (valid_i)
+       data_o <= mem[addr_i];
+
+    parameter MEM_FILE = "blink_slow.mem";
+    initial begin
+      $display("Initializing %s", MEM_FILE);
+      $readmemh(MEM_FILE, mem);
+    end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+		Komórka pamięci składa się z 32bitów, ilość komórek jest definiowana przez parametr \textit{SIZE}. Argument \textit{/*sparse*/} został użyty w celu optymalizacji symulacji. Parametr \textit{MEM\_FILE} określa ścieżkę do pliku, który zostanie załadowany do pamięci. Podczas wysokiego stanu sygnału \textit{valid\_i} zostaje odczytana komórka pamięci ze wskazanego adresu. Zezwala on również na zapis do komórki pamięci, gdy odpowiedni bit sygnału \textit{we\_i} przejdzie w stan wysoki. Sygnał ten jest 4bitowy, każdy bit odpowiada jednemu bajtu w komórce pamięci. Pamięć jest jednoportowa więc w danej chwili czasu dozwolona jest operacja zapisu lub odczytu danych. By zapobiec kolizji, zaimplementowano dwie pamięci \textit{RAM}, pierwsza odpowiedzialna za przechowywanie instrukcji, druga odpowiedzialna za przechowywanie danych. Pamięć instrukcji została przypisana do zerowej komórki tablicy instancji \textit{wb\_slave} interfejsu \textit{wishbone\_if}, natomiast pamięć danych do pierwszej komórki. Rysunek \ref{Fig:ram_sim} przedstawia przebiegi sygnałów oraz fragment pamięci RAM. Podczas wysokiego stanu sygnału \textit{valid}, pojawiła się informacja o chęci odczytu z danych z komórki o adresie \textit{0020}. Pod tym adresem zapisana jest wartość \textit{0100006F} która w następnym cyklu zegarowym trafia na wyprowadzenie \textit{data\_o}, sytuacja ta powtarza się do momentu pojawienia się stanu niskiego sygnału \textit{valid}\\
+					\begin{minipage}{\textwidth}
+				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz dane zawarte w jej komórkach\label{Fig:ram_sim}}
+				\begin{center}
+					\includegraphics[width=15cm]{./rysunki/ram_sim.png}
+					\includegraphics[width=15cm]{./rysunki/pamiec_ram.png}
+				\end{center}
+			\end{minipage} 
+			
+		\subsubsection{Pamięć dwuportowa}
+			\hspace{5mm}
+			
 	\subsection{GPIO}
 	\hspace{5mm}
 		\\opis gpio

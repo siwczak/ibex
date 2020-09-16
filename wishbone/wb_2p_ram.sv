@@ -37,7 +37,7 @@ module wb_2p_ram_instr#(parameter SIZE = -1)
         .b_data_o(b_ram_data_o)
     );
     ///////A port/////////////
-    assign a_ram_addr = wb_data.addr[ADDR_WIDTH+1:2];
+    assign a_ram_addr = wb_data.addr[ADDR_WIDTH-1:2];
     assign a_ram_valid = a_valid;
 	assign a_ram_we = {4{wb_data.we}} & wb_data.sel;
     assign a_ram_data_i = wb_data.data_m;
@@ -56,7 +56,7 @@ module wb_2p_ram_instr#(parameter SIZE = -1)
 		
 		
 		///////B port////////
-    assign b_ram_addr = wb_instr.addr[ADDR_WIDTH+1:2];
+    assign b_ram_addr = wb_instr.addr[ADDR_WIDTH-1:2];
     assign b_ram_valid = b_valid;
     assign wb_instr.data_s = b_ram_data_o;
     

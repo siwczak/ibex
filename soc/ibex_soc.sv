@@ -67,7 +67,7 @@ import addr_map_pkg::*;
 	   (.wb_master(wb_master),
 		.wb_slave(wb_slave));
 
-`ifndef P2_RAM
+`ifdef P2_RAM
 	wb_2p_ram_instr #(
 		.SIZE(RAM_INSTR_SIZE)
 	) ram_instr (

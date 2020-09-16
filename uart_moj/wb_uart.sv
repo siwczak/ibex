@@ -17,7 +17,6 @@ module wb_uart(
 		.baud_rate(19200),
 		.data_bits(8),
 		.parity_type(0),
-		.parity_type(0),
 		.stop_bits(0)
 	)uart_top(
 		.rx_i(uart_rx_i),
