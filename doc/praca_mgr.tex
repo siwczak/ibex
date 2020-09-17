@@ -816,7 +816,7 @@ endpackage
 \end{scriptsize}
 \end{minipage}
 Parametr \textit{NUM\_MASTER} definiuje ilość \textit{masterów} w projekcie. Są dwa, pierwszy przeznaczony dla linii danych rdzenia, drugi przeznaczony dla linii instrukcji rdzenia. Parametr \textit{NUM\_SLAVE} definiuje ilość użytych peryferii. Parametry te służą również do określenia wielkości tablic instancji interfejsu \textit{wishbone\_if}.
-	\subsection{Ibex}
+	\subsection{Rdzeń Ibex}
 	\subsubsection{\textit{Ibex wishbone}}
 	\hspace{5mm}
 		Głównym modułem rdzenia jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wishbone}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Zostały w nim zainicjowane następujące moduły/interfejsy:
@@ -1177,22 +1177,82 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
-		Komórka pamięci składa się z 32bitów, ilość komórek jest definiowana przez parametr \textit{SIZE}. Argument \textit{/*sparse*/} został użyty w celu optymalizacji symulacji. Parametr \textit{MEM\_FILE} określa ścieżkę do pliku, który zostanie załadowany do pamięci. Podczas wysokiego stanu sygnału \textit{valid\_i} zostaje odczytana komórka pamięci ze wskazanego adresu. Zezwala on również na zapis do komórki pamięci, gdy odpowiedni bit sygnału \textit{we\_i} przejdzie w stan wysoki. Sygnał ten jest 4bitowy, każdy bit odpowiada jednemu bajtu w komórce pamięci. Pamięć jest jednoportowa więc w danej chwili czasu dozwolona jest operacja zapisu lub odczytu danych. By zapobiec kolizji, zaimplementowano dwie pamięci \textit{RAM}, pierwsza odpowiedzialna za przechowywanie instrukcji, druga odpowiedzialna za przechowywanie danych. Pamięć instrukcji została przypisana do zerowej komórki tablicy instancji \textit{wb\_slave} interfejsu \textit{wishbone\_if}, natomiast pamięć danych do pierwszej komórki. Rysunek \ref{Fig:ram_sim} przedstawia przebiegi sygnałów oraz fragment pamięci RAM. Podczas wysokiego stanu sygnału \textit{valid}, pojawiła się informacja o chęci odczytu z danych z komórki o adresie \textit{0020}. Pod tym adresem zapisana jest wartość \textit{0100006F} która w następnym cyklu zegarowym trafia na wyprowadzenie \textit{data\_o}, sytuacja ta powtarza się do momentu pojawienia się stanu niskiego sygnału \textit{valid}\\
-					\begin{minipage}{\textwidth}
-				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz dane zawarte w jej komórkach\label{Fig:ram_sim}}
-				\begin{center}
+		Komórka pamięci składa się z 32bitów, ilość komórek jest definiowana przez parametr \textit{SIZE}. Argument \textit{/*sparse*/} został użyty w celu optymalizacji symulacji. Parametr \textit{MEM\_FILE} określa ścieżkę do pliku, który zostanie załadowany do pamięci. Podczas wysokiego stanu sygnału \textit{valid\_i} zostaje odczytana komórka pamięci ze wskazanego adresu. Zezwala on również na zapis do komórki pamięci, gdy odpowiedni bit sygnału \textit{we\_i} przejdzie w stan wysoki. Sygnał ten jest 4bitowy, każdy bit odpowiada jednemu bajtu w komórce pamięci. Pamięć jest jednoportowa więc w danej chwili czasu dozwolona jest operacja zapisu lub odczytu danych. By zapobiec kolizji, zaimplementowano dwie pamięci \textit{RAM}, pierwsza odpowiedzialna za przechowywanie instrukcji, druga odpowiedzialna za przechowywanie danych. Pamięć instrukcji została przypisana do zerowej komórki tablicy instancji \textit{wb\_slave} interfejsu \textit{wishbone\_if}, natomiast pamięć danych do pierwszej komórki. Rysunek \ref{Fig:ram_sim} przedstawia przebiegi sygnałów oraz fragment pamięci RAM. Podczas wysokiego stanu sygnału \textit{valid}, pojawiła się informacja o chęci odczytu z danych z komórki o adresie \textit{0020}. Pod tym adresem zapisana jest wartość \textit{0100006F} która w następnym cyklu zegarowym trafia na wyprowadzenie \textit{data\_o}, sytuacja ta powtarza się do momentu pojawienia się stanu niskiego sygnału \textit{valid}. Rysunek \ref{Fig:ram_write} przedstawia sytuacje zapisu do pamięci. TODO Listing \ref{Lis:ram_1p_in} i \ref{Lis:ram_1p_data} przedstawiają instancje modułów pamięci.\\
+\begin{minipage}{.49\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:ram_1p_in,caption=Instancja pamięci instrukcji]
+    p1_ram_instr#(
+        .SIZE(SIZE),
+        .AW(ADDR_WIDTH))
+    ram(
+        .clk_i(wb.clk_i),
+        .addr_i(ram_addr),
+        .valid_i(ram_valid),
+        .data_i(ram_data_i),
+        .data_o(ram_data_o)
+    );
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage} \hspace{.02\textwidth}
+\begin{minipage}{.49\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:ram_1p_data,caption=Instancja pamięci danych]
+    p1_ram_data#(
+        .SIZE(SIZE),
+        .AW(ADDR_WIDTH))
+    ram(
+        .clk_i(wb.clk_i),
+        .addr_i(ram_addr),
+        .valid_i(ram_valid),
+        .we_i(ram_we),
+        .data_i(ram_data_i),
+        .data_o(ram_data_o));
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}\\
+					\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz jej dane podczas odczytu.\label{Fig:ram_sim}}
+
 					\includegraphics[width=15cm]{./rysunki/ram_sim.png}
 					\includegraphics[width=15cm]{./rysunki/pamiec_ram.png}
-				\end{center}
+
+			\end{minipage} 
+					\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz dane zawarte w jej komórkach\label{Fig:ram_write}}
+					\includegraphics[width=15cm]{./rysunki/ram_sim.png}
+					\includegraphics[width=15cm]{./rysunki/pamiec_ram.png}
 			\end{minipage} 
 			
 		\subsubsection{Pamięć dwuportowa}
 			\hspace{5mm}
-			
-	\subsection{GPIO}
-	\hspace{5mm}
-		\\opis gpio
+			Pamięć dwu portowa składa się z dwóch zestawów linii adresowych, danych i sterujących. Pozwala to na jednoczesny dostęp do pamięci dwóm niezależnym procesom do wspólnych danych. Komórka pamięci składa się z 32bitów a ilość komórek jest definiowana przez parametr \textit{SIZE}. Inicjalizacja pamięci odbywa się poprzez podanie ścieżki do pliku w parametrze \textit{MEM\_FILE}. Zapis i odczyt działa w sposób analogiczny jak w przypadku pamięci jednoportowej. Gdy obie linie adresowe wskazują tą samą komórkę, pierwszeństwo ma linia z instrukcji oznaczona literą \textit{b}. Listing \ref{Lis:ram_2p} przedstawia inicjalizację tego modułu. Sygnały \textit{b\_we\_i} i \textit{b\_data\_i} zostały przypisane do zera ponieważ w aktualnej wersji przewiduje jedynie wgrywanie kodu maszynowego poprzez podanie odpowiedniej ścieżki za pomocą parametru \textit{MEM\_FILE}.\\
+						\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:ram_2p,caption=Model pamięci RAM]
+    p2_ram#(
+        .SIZE(SIZE),
+        .AW(ADDR_WIDTH))
+    ram(
+        .clk_i(wb_data.clk_i),
+        .a_addr_i(a_ram_addr),
+        .a_valid_i(a_ram_valid),
+        .a_we_i(a_ram_we),
+        .a_data_i(a_ram_data_i),
+        .a_data_o(a_ram_data_o),
+		
+        .b_addr_i(b_ram_addr),
+        .b_valid_i(b_ram_valid),
+        .b_we_i('0),
+        .b_data_i('0),
+        .b_data_o(b_ram_data_o)
+    );
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
 
+	\subsection{GPIO}
+		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
+			W celu poprawnej komunikacji należało przygotować moduł odpowiedzialny za konwersję i przekazywanie danych między \textit{GPIO} a magistralą. Rolę tę pełni \textit{wb\_gpio}
 	\subsection{UART}
 	\hspace{5mm}
 		\\opis uart

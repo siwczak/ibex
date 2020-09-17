@@ -33,7 +33,7 @@ module p2_ram#(
        a_data_o <= mem[a_addr_i];
 
    always @(posedge clk_i)
-     if (b_valid_i)
+     if (b_valid_i && (b_addr_i != a_addr_i))
        begin
           if (b_we_i[0]) mem[b_addr_i][7:0]   <= b_data_i[7:0];
           if (b_we_i[1]) mem[b_addr_i][15:8]  <= b_data_i[15:8];
@@ -42,7 +42,7 @@ module p2_ram#(
        end
 
    always_ff @(posedge clk_i)
-     if (b_valid_i)
+     if (b_valid_i && (b_addr_i != a_addr_i))
        b_data_o <= mem[b_addr_i];
 
     localparam MEM_FILE = "sw/blink_slow.mem";
