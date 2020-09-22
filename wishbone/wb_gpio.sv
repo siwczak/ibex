@@ -40,8 +40,7 @@ module wb_gpio(
 	  .data_m(wb.data_m[3:0]),
 	  .sel_led(select_led),
 	  .sel_but(select_but),
-	  .we(wb.we)
-	);
+	  .we(wb.we));
            
    assign valid    = wb.cyc & wb.stb;
    assign select_led   = wb.addr[11:2] == 0;

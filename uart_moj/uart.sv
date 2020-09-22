@@ -1,10 +1,10 @@
 module uart #(
 	// Parameters
-	parameter clk_freq = 50000000,             // Hz
-	parameter baud_rate = 19200,               // bits per second
-	parameter data_bits = 8,                   // Range:5-9
-	parameter parity_type = 0,                 // Range:0=None,1=Odd,2=Even
-	parameter stop_bits = 1                    // Range:1-2
+	parameter clk_freq = 50000000,             
+	parameter baud_rate = 19200,               
+	parameter data_bits = 8,                   
+	parameter parity_type = 0,                 
+	parameter stop_bits = 1                    
 )(
 	// Inputs
 	input                  rx_i,

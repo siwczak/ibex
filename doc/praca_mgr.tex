@@ -1177,7 +1177,7 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
-		Komórka pamięci składa się z 32bitów, ilość komórek jest definiowana przez parametr \textit{SIZE}. Argument \textit{/*sparse*/} został użyty w celu optymalizacji symulacji. Parametr \textit{MEM\_FILE} określa ścieżkę do pliku, który zostanie załadowany do pamięci. Podczas wysokiego stanu sygnału \textit{valid\_i} zostaje odczytana komórka pamięci ze wskazanego adresu. Zezwala on również na zapis do komórki pamięci, gdy odpowiedni bit sygnału \textit{we\_i} przejdzie w stan wysoki. Sygnał ten jest 4bitowy, każdy bit odpowiada jednemu bajtu w komórce pamięci. Pamięć jest jednoportowa więc w danej chwili czasu dozwolona jest operacja zapisu lub odczytu danych. By zapobiec kolizji, zaimplementowano dwie pamięci \textit{RAM}, pierwsza odpowiedzialna za przechowywanie instrukcji, druga odpowiedzialna za przechowywanie danych. Pamięć instrukcji została przypisana do zerowej komórki tablicy instancji \textit{wb\_slave} interfejsu \textit{wishbone\_if}, natomiast pamięć danych do pierwszej komórki. Rysunek \ref{Fig:ram_sim} przedstawia przebiegi sygnałów oraz fragment pamięci RAM. Podczas wysokiego stanu sygnału \textit{valid}, pojawiła się informacja o chęci odczytu z danych z komórki o adresie \textit{0020}. Pod tym adresem zapisana jest wartość \textit{0100006F} która w następnym cyklu zegarowym trafia na wyprowadzenie \textit{data\_o}, sytuacja ta powtarza się do momentu pojawienia się stanu niskiego sygnału \textit{valid}. Rysunek \ref{Fig:ram_write} przedstawia sytuacje zapisu do pamięci. TODO Listing \ref{Lis:ram_1p_in} i \ref{Lis:ram_1p_data} przedstawiają instancje modułów pamięci.\\
+		Komórka pamięci składa się z 32bitów, ilość komórek jest definiowana przez parametr \textit{SIZE}. Argument \textit{/*sparse*/} został użyty w celu optymalizacji symulacji. Parametr \textit{MEM\_FILE} określa ścieżkę do pliku, który zostanie załadowany do pamięci. Podczas wysokiego stanu sygnału \textit{valid\_i} zostaje odczytana komórka pamięci ze wskazanego adresu. Zezwala on również na zapis do komórki pamięci, gdy odpowiedni bit sygnału \textit{we\_i} przejdzie w stan wysoki. Sygnał ten jest 4bitowy, każdy bit odpowiada jednemu bajtu w komórce pamięci. Pamięć jest jednoportowa więc w danej chwili czasu dozwolona jest operacja zapisu lub odczytu danych. By zapobiec kolizji, zaimplementowano dwie pamięci \textit{RAM}, pierwsza odpowiedzialna za przechowywanie instrukcji, druga odpowiedzialna za przechowywanie danych. Pamięć instrukcji została przypisana do zerowej komórki tablicy instancji \textit{wb\_slave} interfejsu \textit{wishbone\_if}, natomiast pamięć danych do pierwszej komórki. Rysunek \ref{Fig:ram_sim} przedstawia przebiegi sygnałów oraz fragment pamięci RAM. Podczas wysokiego stanu sygnału \textit{valid}, pojawiła się informacja o chęci odczytu z danych z komórki o adresie \textit{0020}. Pod tym adresem zapisana jest wartość \textit{0100006F} która w następnym cyklu zegarowym trafia na wyprowadzenie \textit{data\_o}, sytuacja ta powtarza się do momentu pojawienia się stanu niskiego sygnału \textit{valid}. Rysunek \ref{Fig:ram_write} przedstawia sytuacje zapisu do pamięci. Na linii adresowej pojawia się \textit{00}, sygnał \textit{valid\_i} jest w stanie wysokim. Oznacza to, że w następnym cyklu zegarowym do komórki pamięci o adresie \textit{0} zostanie przypisana wartość znajdująca się w \textit{data\_i}. Jak widać na przebiegu sygnałów wartość ta została poprawnie zapisana. Gdy sygnał \textit{valid\_i} jest w stanie niskim, wartość z linii \textit{data\_o} nie powinna zostać przekazana do pamięci. Na przebiegach również została ukazana taka sytuacja, linia adresowa przyjmuje wartość \textit{1D} lecz komórka pamięci o tym adresie nie zostaje zapisana. Listing \ref{Lis:ram_1p_in} i \ref{Lis:ram_1p_data} przedstawiają instancje modułów pamięci.\\
 \begin{minipage}{.49\textwidth}
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:ram_1p_in,caption=Instancja pamięci instrukcji]
@@ -1213,14 +1213,13 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 					\begin{minipage}[c]{\textwidth}
 				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz jej dane podczas odczytu.\label{Fig:ram_sim}}
 
-					\includegraphics[width=15cm]{./rysunki/ram_sim.png}
-					\includegraphics[width=15cm]{./rysunki/pamiec_ram.png}
+					\includegraphics[width=\textwidth]{./rysunki/ram_sim.png}
+					\includegraphics[width=\textwidth]{./rysunki/pamiec_ram.png}
 
 			\end{minipage} 
 					\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz dane zawarte w jej komórkach\label{Fig:ram_write}}
-					\includegraphics[width=15cm]{./rysunki/ram_sim.png}
-					\includegraphics[width=15cm]{./rysunki/pamiec_ram.png}
+				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} podczas zapisu.\label{Fig:ram_write}}
+					\includegraphics[width=\textwidth]{./rysunki/zapis_ram.png}
 			\end{minipage} 
 			
 		\subsubsection{Pamięć dwuportowa}
@@ -1228,7 +1227,7 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 			Pamięć dwu portowa składa się z dwóch zestawów linii adresowych, danych i sterujących. Pozwala to na jednoczesny dostęp do pamięci dwóm niezależnym procesom do wspólnych danych. Komórka pamięci składa się z 32bitów a ilość komórek jest definiowana przez parametr \textit{SIZE}. Inicjalizacja pamięci odbywa się poprzez podanie ścieżki do pliku w parametrze \textit{MEM\_FILE}. Zapis i odczyt działa w sposób analogiczny jak w przypadku pamięci jednoportowej. Gdy obie linie adresowe wskazują tą samą komórkę, pierwszeństwo ma linia z instrukcji oznaczona literą \textit{b}. Listing \ref{Lis:ram_2p} przedstawia inicjalizację tego modułu. Sygnały \textit{b\_we\_i} i \textit{b\_data\_i} zostały przypisane do zera ponieważ w aktualnej wersji przewiduje jedynie wgrywanie kodu maszynowego poprzez podanie odpowiedniej ścieżki za pomocą parametru \textit{MEM\_FILE}.\\
 						\begin{minipage}{\textwidth}
 \begin{scriptsize}
-\begin{lstlisting}[label=Lis:ram_2p,caption=Model pamięci RAM]
+\begin{lstlisting}[label=Lis:ram_2p,caption=Inicjalizacja dwuportowej pamięci RAM]
     p2_ram#(
         .SIZE(SIZE),
         .AW(ADDR_WIDTH))
@@ -1244,19 +1243,109 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
         .b_valid_i(b_ram_valid),
         .b_we_i('0),
         .b_data_i('0),
-        .b_data_o(b_ram_data_o)
-    );
+        .b_data_o(b_ram_data_o)    );
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
 
 	\subsection{GPIO}
 		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
-			W celu poprawnej komunikacji należało przygotować moduł odpowiedzialny za konwersję i przekazywanie danych między \textit{GPIO} a magistralą. Rolę tę pełni \textit{wb\_gpio}
-	\subsection{UART}
-	\hspace{5mm}
-		\\opis uart
+		\hspace{5mm}	W celu poprawnej komunikacji należało przygotować moduł odpowiedzialny za konwersję i przekazywanie danych między \textit{GPIO} a magistralą. Rolę tę pełni \textit{wb\_gpio}. Moduł ten zawiera instancję \textit{GPIO} oraz sygnały pomocnicze do komunikacji. Listing \ref{Lis:gpio_wb} przedstawia fragment tego modułu.\\
+									\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:gpio_wb,caption=Komunikacja \textit{GPIO} z magistralą]
+   assign valid    = wb.cyc & wb.stb;
+   assign select_output   = wb.addr[11:2] == 0;
+   assign select_input   = wb.addr[11:2] == 1;
+   assign wb.stall = 1'b0;
+   assign wb.err   = 1'b0;
 
+   always_ff @(posedge wb.clk_i or posedge wb.rst_ni)
+     if (!wb.rst_ni)
+       wb.ack <= 1'b0;
+     else
+       wb.ack <= valid & ~wb.stall;
+
+   assign wb.data_s = {28'h0000000, data_s};   
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+		Do linii \textit{data\_s} został przypisany sygnał pochodzący z instancji \textit{GPIO} \textit{data\_s}, jest on 4bitowy więc by w pełni zapełnić przestrzeń zastosowano konkatenację. Sygnały \textit{wb.err} i \textit{wb.stall} zostały przypisane do zera. Projekt sytuacji by te sygnały mogą się pojawić. Wybór kierunku transmisji jest wybierany poprzez ustawienie odpowiedniego bitu w sygnale \textit{wb.addr}. Jeśli wartość tego wektora będzie równa \textit{0}, dane zostaną przekazane do wyjścia, jeśli wartość wektora będzie równa \textit{1}, dane zostaną odczytane z wejść. Sygnał \textit{valid} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Sygnał \textit{wb.ack} przyjmuje stan wysoki jeden cykl zegarowy po pojawieniu się sygnału \textit{valid}. 
+\subsubsection{Moduł \textit{GPIO}}		
+	\hspace{5mm}	 Opis modułu \textit{GPIO} został przedstawiony na listingu \ref{Lis:gpio_module}. Podczas resetu wszystkie sygnały są zerowane. Następnie w zależności od wybranego trybu, dane są przekazywane na diody LED lub odczytywane z przełączników znajdujących się na płytce FPGA. Następnie infomracje są przekazywane do sygnału \textit{data\_s}\\
+											\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:gpio_module,caption=Model \textit{GPIO}]
+	always @(posedge clk_i or posedge rst_ni)
+		if (!rst_ni)
+			led <= '0;
+		else
+		if (valid && we && sel_led) begin
+			led <= data_m[3:0];
+			data_s <= led;
+		end
+
+	always @(posedge clk_i or posedge rst_ni)
+		if (!rst_ni)
+			data_output <= '0;
+		else
+		if (valid && we && sel_but) begin
+			data_input <= button;
+			data_s <= data_input;
+		end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+	\subsection{\textit{UART}}
+	\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
+		\hspace{5mm} W celu poprawnej komunikacji z magistralą \textit{Wishbone} został stworzony moduł \textit{wb\_uart}. Znajduje się w nim instancja modułu głównego \textit{UART}, oraz sygnały potrzebne do poprawnego połączenia z magistralą. Listing \ref{Lis:uart_wb} przedstawia inicjalizację modułu głównego \textit{UART} i sygnały pomocnicze.	\\			\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:uart_wb,caption=Model \textit{GPIO}]
+	uart#(.clk_freq(50000000),
+		.baud_rate(19200),
+		.data_bits(8),
+		.parity_type(0),
+		.stop_bits(0)) uart_top (
+		.rx_i(uart_rx_i),
+		.tx_data_i(wb.data_m[8-1:0]),
+		.tx_data_vld_i(valid_i),
+		.rst_i(~wb.rst_ni),
+		.clk_i(wb.clk_i),
+		.rx_data_vld_o(valid_o),
+		.rx_data_o(uart_data_rx),
+		.rx_parity_err_o(wb.err),
+		.tx_o(uart_tx_o),
+		.tx_active_o(wb.stall));
+
+	assign valid_i = wb.cyc & wb.stb;
+	assign wb.data_s = {24'h000000, uart_data_rx};  
+	always_ff @(posedge wb.clk_i or posedge wb.rst_ni)
+		if (!wb.rst_ni)
+			wb.ack <= 1'b0;
+		else
+			wb.ack <= valid_o & ~wb.stall;
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}		
+		W celu przypisania wartości sygnału \textit{uart\_data\_rx} do wektora \textit{wb.data\_s} należy użyć konkatenacji z zerami, ponieważ sygnał ten jest 8bitowy. Zera chronią przed zapisałem niechcianych sygnałów. Sygnał \textit{valid\_i} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Potwierdzenie nadania informacji poprzez transmiter jest uzyskiwane poprzez mnożenie logiczne sygnału \textit{valid\_o} i negacją sygnału \textit{wb.stall}.
+	\subsubsection{Moduł główny \textit{UART}}
+	W module głównym znajdują się instancje transmitera i odbiornika \textit{UART}.  Poprzez parametryzowanie go można określić następujące cechy:
+	\begin{itemize}
+		\item \textit{clk\_freq} - określa częstotliwość zegara systemu na czipie,
+		\item \textit{baud\_rate} - określa szybkość transmisji, w projekcie jego wartość jest równa 19200bps,
+		\item \textit{data\_bits} - określa szerokość wektora danych. W projekcie użyto 8bitowej szerokości
+		\item \textit{parity\_type} - określa bit parzystości, przypisanie zera wyłączy go, jedynki ustawienie go jako bit nieparzystości, dwójki ustawienie go jako bit parzysty. W projekcie bit ten jest wyłączony.
+		\item \textit{stop\_bits} - ilość bitów stopu, dostępny jest wybór między jednym a dwoma bitami. W projekcie występuje jeden bit stopu.
+	\end{itemize}
+	\subsubsection{Transmiter \textit{UART}}
+	opis
+	\subsubsection{Odbiornik \textit{UART}}
+	Odbiornik został zaimplementowany w oparciu o graf FSM przedstawiony na rysunku \ref{Fig:fsm_uart_rec} \\
+			\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_rec}}
+					\includegraphics[width=\textwidth]{./rysunki/uart_fsm_rec.png}
+			\end{minipage} 
+			Stany te zostały zdefiniowane jako lokalne parametry, za poruszanie się między nimi odpowiedzialne są dwie zmienne: \textit{rx\_STATE} oraz \textit{rx\_NEXT}.
 	\subsection{I2C}
 		\subsubsection{master}
 		\hspace{5mm}

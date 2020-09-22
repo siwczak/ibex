@@ -32,6 +32,26 @@ module uart_rx #(
 	logic rx_data_vld_next, parity_err_next;
 	logic [1:0] stop_bits_remaining, stop_bits_remaining_next;
 
+	// FSM definition
+	/*
+		Aldec enum fsm_enc CURRENT = rx_STATE
+		Aldec enum fsm_enc STATES = rx_IDLE, rx_START, rx_DATA, rx_STOP, rx_PARITY
+		Aldec enum fsm_enc TRANS = rx_IDLE -> rx_START,
+			rx_IDLE -> rx_IDLE,
+			rx_START -> rx_IDLE,
+			rx_START -> rx_DATA,
+			rx_START -> rx_START,
+			rx_DATA -> rx_DATA,
+			rx_DATA -> rx_STOP,
+			rx_DATA -> rx_PARITY,
+			rx_PARITY -> rx_PARITY,
+			rx_PARITY -> rx_STOP,
+			rx_STOP -> rx_STOP,
+			rx_STOP -> rx_IDLE
+			Aldec enum fsm_enc SEQ = rx_IDLE -> rx_START -> rx_DATA -> rx_STOP
+	*/
+
+
 	always_ff @(posedge clk) begin
 		if(rst) begin
 			rx_STATE <= rx_IDLE;
