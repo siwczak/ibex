@@ -35,6 +35,25 @@ module uart_tx #(
 	assign tx_active = (tx_STATE != tx_IDLE);
 	assign tx = tx_out_reg;
 
+	// FSM definition
+	/*
+		Aldec enum fsm_enc CURRENT = tx_STATE
+		Aldec enum fsm_enc STATES = tx_IDLE, tx_START, tx_DATA, tx_STOP, tx_PARITY
+		Aldec enum fsm_enc TRANS = tx_IDLE -> tx_START,
+			tx_IDLE -> tx_IDLE,
+			tx_START -> tx_IDLE,
+			tx_START -> tx_DATA,
+			tx_START -> tx_START,
+			tx_DATA -> tx_DATA,
+			tx_DATA -> tx_STOP,
+			tx_DATA -> tx_PARITY,
+			tx_PARITY -> tx_PARITY,
+			tx_PARITY -> tx_STOP,
+			tx_STOP -> tx_STOP,
+			tx_STOP -> tx_IDLE
+			Aldec enum fsm_enc SEQ = tx_IDLE -> tx_START -> tx_DATA -> tx_STOP
+	*/
+
 	always_ff @(posedge clk) begin
 		if(rst) begin
 			tx_STATE <= tx_IDLE;
@@ -90,29 +109,29 @@ module uart_tx #(
 				end
 			end
 
-			tx_DATA: begin
-				tx_out_next = tx_data_reg[index_bit_reg];
-				if(clk_div_reg < clock_divide[$clog2(clock_divide):0]-1'b1) begin
-					clk_div_next = clk_div_reg + 1'b1;
-					tx_NEXT = tx_DATA;
-				end
-				else begin
-					clk_div_next = 0;
-					if(index_bit_reg < (data_bits-1)) begin
-						index_bit_next = index_bit_reg + 1'b1;
-						tx_NEXT = tx_DATA;
-					end
-					else begin
-						index_bit_next = 0;
-						if(parity_type == 0) begin
-							tx_NEXT = tx_STOP;
-						end
-						else begin
-							tx_NEXT = tx_PARITY;
-						end
-					end
-				end
+tx_DATA: begin
+	tx_out_next = tx_data_reg[index_bit_reg];
+	if(clk_div_reg < clock_divide[$clog2(clock_divide):0]-1'b1) begin
+		clk_div_next = clk_div_reg + 1'b1;
+		tx_NEXT = tx_DATA;
+	end
+	else begin
+		clk_div_next = 0;
+		if(index_bit_reg < (data_bits-1)) begin
+			index_bit_next = index_bit_reg + 1'b1;
+			tx_NEXT = tx_DATA;
+		end
+		else begin
+			index_bit_next = 0;
+			if(parity_type == 0) begin
+				tx_NEXT = tx_STOP;
 			end
+			else begin
+				tx_NEXT = tx_PARITY;
+			end
+		end
+	end
+end
 
 			tx_PARITY: begin
 				if(parity_type == 1) begin

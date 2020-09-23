@@ -1298,7 +1298,8 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{minipage}
 	\subsection{\textit{UART}}
 	\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
-		\hspace{5mm} W celu poprawnej komunikacji z magistralą \textit{Wishbone} został stworzony moduł \textit{wb\_uart}. Znajduje się w nim instancja modułu głównego \textit{UART}, oraz sygnały potrzebne do poprawnego połączenia z magistralą. Listing \ref{Lis:uart_wb} przedstawia inicjalizację modułu głównego \textit{UART} i sygnały pomocnicze.	\\			\begin{minipage}{\textwidth}
+		\hspace{5mm} W celu poprawnej komunikacji z magistralą \textit{Wishbone} został stworzony moduł \textit{wb\_uart}. Znajduje się w nim instancja modułu głównego \textit{UART}, oraz sygnały potrzebne do poprawnego połączenia z magistralą. Listing \ref{Lis:uart_wb} przedstawia inicjalizację modułu głównego \textit{UART} i sygnały pomocnicze.	\\	
+\begin{minipage}{\textwidth}
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:uart_wb,caption=Model \textit{GPIO}]
 	uart#(.clk_freq(50000000),
@@ -1338,14 +1339,111 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 		\item \textit{stop\_bits} - ilość bitów stopu, dostępny jest wybór między jednym a dwoma bitami. W projekcie występuje jeden bit stopu.
 	\end{itemize}
 	\subsubsection{Transmiter \textit{UART}}
-	opis
+	Transmiter został zaimplementowany w oparciu o graf FSM przedstawiony na rysunku \ref{Fig:fsm_uart_tx}\\
+				\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_tx}}
+					\includegraphics[width=\textwidth]{./rysunki/uart_tx_fsm.png}
+			\end{minipage}
+		Stany te zostały przepisane do lokalnych parametrów, za poruszanie się między nimi odpowiadają zmienne: \textit{tx\_STATE} i \textit{tx\_NEXT}. Podczas resetu sygnały są zerowane i zostaje ustawiony stan \textit{tx\_IDLE}. Po jego zwolnieniu wartości zostają przypisywane do poszczególnych sygnałów. Przedstawia to listing \ref{Lis:uart_tx_reset}.\\
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:uart_tx_reset,caption=Transmiter \textit{UART} po resecie]
+			tx_STATE <= tx_NEXT;
+			clk_div_reg <= clk_div_next;
+			tx_out_reg <= tx_out_next;
+			tx_data_reg <= tx_data_next;
+			index_bit_reg <= index_bit_next;
+			stop_bits_remaining <= stop_bits_remaining_next;
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Podczas stanu \textit{tx\_IDLE} zostają przypisane wartości domyślne, dla sygnału \textit{tx} ustawiony jest stan wysoki. Gdy nadejdzie potwierdzenie przesłania danych przez rdzeń, stan zostaje zmieniony na \textit{tx\_START}.\\
+Stan \textit{tx\_START} ustawia sygnał \textit{tx} na niski, rozpoczynając w ten sposób transmisje. Następnie do zmiennej \textit{tx\_NEXT} przypisywany jest stan \textit{tx\_DATA}.\\
+Stan \textit{tx\_DATA} został przedstawiony na listingu \ref{Lis:uart_tx_data}. Do sygnału \textit{tx} jest przypisywana wartość wybranego bitu wektora \textit{tx\_data\_reg}. Kolejny krok to sprawdzanie czasu bitu, jeśli licznik czasu dojdzie do samego końca, wskaźnik bitu zwiększa swoją wartość w przeciwnym razie zachodzi inkrementacja licznika czasu i zapętlenie stanu. Przepełnienie wskaźnika bitu skutkuje przejściem w kolejny stan \textit{tx\_STOP} lub \textit{tx\_PARITY} jeśli ustawiony jest parametr.\\
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:uart_tx_data,caption=Stan \textit{tx\_DATA}]
+tx_DATA: begin
+	tx_out_next = tx_data_reg[index_bit_reg];
+	if(clk_div_reg < clock_divide[$clog2(clock_divide):0]-1'b1) begin
+		clk_div_next = clk_div_reg + 1'b1;
+		tx_NEXT = tx_DATA;
+	end
+	else begin
+		clk_div_next = 0;
+		if(index_bit_reg < (data_bits-1)) begin
+			index_bit_next = index_bit_reg + 1'b1;
+			tx_NEXT = tx_DATA;
+		end
+		else begin
+			index_bit_next = 0;
+			if(parity_type == 0) begin
+				tx_NEXT = tx_STOP;
+			end
+			else begin
+				tx_NEXT = tx_PARITY;
+			end
+		end
+	end
+end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Parzystość zostaje sprawdzana przy pomocy operatorów redukcji \textit{XOR} lub \textit{NXOR} użytych na całym wektorze \textit{tx\_data\_reg}. Po wysłaniu tej informacji, do zmiennej \textit{tx\_NEXT} zostaje przypisany stan \textit{tx\_STOP}.\\
+W stanie \textit{tx\_STOP} zostaje wysłana odpowiednia ilość bitów stopu. Po dokonaniu tej operacji, stan wraca do \textit{tx\_IDLE}.
 	\subsubsection{Odbiornik \textit{UART}}
 	Odbiornik został zaimplementowany w oparciu o graf FSM przedstawiony na rysunku \ref{Fig:fsm_uart_rec} \\
 			\begin{minipage}[c]{\textwidth}
 				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_rec}}
 					\includegraphics[width=\textwidth]{./rysunki/uart_fsm_rec.png}
 			\end{minipage} 
-			Stany te zostały zdefiniowane jako lokalne parametry, za poruszanie się między nimi odpowiedzialne są dwie zmienne: \textit{rx\_STATE} oraz \textit{rx\_NEXT}.
+			Stany te zostały zdefiniowane jako lokalne parametry, za poruszanie się między nimi odpowiedzialne są dwie zmienne: \textit{rx\_STATE} oraz \textit{rx\_NEXT}. Podczas resetu sygnały są zerowane, do zmiennej \textit{rx\_STATE} zostaje przypisany stan \textit{rx\_IDLE}. Po jego zwolnieniu następuje przypisanie nie blokujące, które ma na celu przypisania wartości w następnym cyklu zegarowym. W ten sposób aktualizacja stanu nastąpi zawsze na początku cyklu. Listing \ref{Lis:uart_po_res} pokazuje wszystkie przypisania. Całość mieści się w bloku proceduralnym \textit{always\_ff}.\\
+\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:uart_po_res,caption=Odbiornik \textit{UART} po resecie]
+			rx_STATE <= rx_NEXT;
+			clk_div_reg <= clk_div_next;
+			rx_data_reg <= rx_data_next;
+			index_bit_reg <= index_bit_next;
+			rx_data_vld <= rx_data_vld_next;
+			rx_parity_err <= parity_err_next;
+			stop_bits_remaining <= stop_bits_remaining_next;
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}	
+Pierwszą fazą która występuje po resecie jest: \textit{rx\_IDLE}. Podczas niej blok czeka, aż na linii \textit{rx} pojawi się zero logiczne, oznaczające początek transmisji. Jeśli ten warunek zostanie spełniony do zmiennej \textit{rx\_NEXT} zostaje przypisana faza \textit{rx\_START}. Jeśli na linii \textit{rx} wciąż pozostaje stan wysoki do \textit{rx\_NEXT} przypisany zostanie \textit{rx\_IDLE}. Podczas tej fazy zostają ustawione wartości początkowe dla sygnałów.\\
+W fazie \textit{rx\_START} następuje ponowne sprawdzenie stanu sygnału \textit{rx}, sprawdzenie te następuje w połowie trwania bitu. Jeśli pozostał w stanie niskim nastąpi przypisanie do \textit{rx\_NEXT} kolejnego stanu, którym jest \textit{rx\_DATA}. Jeśli sygnał powrócił do stanu wysokiego, stan wraca do \textit{rx\_IDLE}.\\
+Faza \textit{rx\_DATA} została przedstawiona na listingu \ref{Lis:rx_data}. Pierwszym krokiem w tym stanie, jest sprawdzanie w jakim czasie trwania bitu znajduje się sygnał. W warunku sprawdzającym ograniczono wielkość wektora \textit{clock\_divide} na niezbędnej ilości bitów w celu optymalizacji projektu. Gdy licznik przyjmie wartość  równą końcu czasu bitu, następuje jego wyzerowanie i przypisanie wartości sygnały \textit{rx} do wektora \textit{rx\_data\_next}. Następnie jest sprawdzana ilość odebranych bitów, jeśli zostanie ona przekroczona, następuje kolejny stan \textit{rx\_STOP} lub \textit{rx\_PARITY} w zależności od ustawień parametru odpowiedzialnego za parzystość bitu. W przeciwnym razie, wartość indeksu wektora zostaje zwiększona i stan się zapętla.\\			\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:rx_data,caption=Stan \textit{rx\_DATA}]
+rx_DATA: begin
+	if(clk_div_reg < clock_divide[$clog2(clock_divide):0]-1'b1) begin
+		clk_div_next = clk_div_reg + 1'b1;
+		rx_NEXT = rx_DATA;
+	end
+	else begin
+		clk_div_next = 0;
+		rx_data_next[index_bit_reg] = rx;
+		if(index_bit_reg < (data_bits-1)) begin
+			index_bit_next = index_bit_reg + 1'b1;
+			rx_NEXT = rx_DATA;
+		end
+		else begin
+			index_bit_next = 0;
+			if(parity_type == 0) begin
+				rx_NEXT = rx_STOP;
+			end
+			else begin
+				rx_NEXT = rx_PARITY;
+			end
+		end
+	end
+end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}	
+Parzystość zostaje sprawdzana za pomocą operatorów redukcji \textit{XOR} i \textit{NXOR} zastosowanych na całym wektorze \textit{rx\_data\_reg}. \\
+W fazie \textit{rx\_STOP} blok czeka na pojawienie się określonej ilości bitów stopu. Gdy warunek ten zostanie spełniony stan wraca do \textit{rx\_IDLE} oraz ustawia logiczną jedynkę dla sygnału potwierdzającego odbiór transmisji.
 	\subsection{I2C}
 		\subsubsection{master}
 		\hspace{5mm}
@@ -1383,53 +1481,25 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 		\hspace{5mm}
 			\\krotko o tym tescie i wynik z simstatus jak rowniez fragment logu komparacji z spike/ovpsim
 
-	\subsection{UVM build phases}
-	
-		\subsubsection{UVM build phase}
-		\hspace{5mm}
-			\\co tam jest
-			
-		\subsubsection{UVM connect phase}
-		\hspace{5mm}
-			\\co tam jest
-	
-		\subsubsection{UVM end of elaboration phase}
-		\hspace{5mm}
-			\\co tam jest	
-	
-	\subsection{UVM run phases}
+\subsection{ibex core}
 
-		\subsubsection{UVM start of simulation}
-		\hspace{5mm}
-			\\co tam jest	
+\subsection{pamiec ram}
 
-		\subsubsection{UVM run phase}
-		\hspace{5mm}
-			\\co tam jest	
+\subsection{gpio}
 
-	\subsection{UVM cleanup phases}
+\subsection{uart}
 
-		\subsubsection{UVM extract phase}
-		\hspace{5mm}
-			\\co tam jest	
-			
-		\subsubsection{UVM check phase}
-		\hspace{5mm}
-			\\co tam jest	
-			
-		\subsubsection{UVM report phase}
-		\hspace{5mm}
-			\\co tam jest	
-			
-		\subsubsection{UVM final phase}
-		\hspace{5mm}
-			\\co tam jest	
+\subsection{spi}
+
+\subsection{i2c}
 
 \newpage
 \section{Benchmarki}
 \hspace{5mm}
 	\\ pamiec 1p ram vs 2p ram
 
+\newpage
+\section{Uruchomienie przykładowego programu}
 \newpage
 \section{Podsumowanie i wnioski}
 	\subsection{dalszy rozwoj}
