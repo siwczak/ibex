@@ -1,0 +1,8 @@
+{signal: [
+  {name:'', wave: '2.222222', data: "SPR CPHA CPOL MSTR - SPE SPIE" },
+],
+ head:{
+   tick:0
+ },
+"config": { "hscale": 1.5 }
+}

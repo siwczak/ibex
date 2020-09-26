@@ -26,6 +26,5 @@ module wb_spi_master#(parameter SPI_SLAVE = -1)(
     .sck_o(sck_o),
     .cs_o(cs_o),
     .mosi_o(mosi_o),
-    .miso_i(miso_i)
-    );
+    .miso_i(miso_i));
 endmodule

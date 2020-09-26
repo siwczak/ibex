@@ -12,6 +12,7 @@ module uart #(
 	input                  tx_data_vld_i,
 	input                  rst_i,
 	input                  clk_i,
+	input				   we_i,
 
 	// Outputs
 	output                 rx_data_vld_o,
@@ -28,6 +29,7 @@ module uart #(
 	receiver(
 		.clk(clk_i),
 		.rst(rst_i),
+		.we(we_i),
 		.rx(rx_i),
 		.rx_data_out(rx_data_o),
 		.rx_data_vld(rx_data_vld_o),
@@ -41,6 +43,7 @@ module uart #(
 	transmitter(
 		.clk(clk_i),
 		.rst(rst_i),
+		.we(we_i),
 		.tx_data_vld(tx_data_vld_i),
 		.tx_data_in(tx_data_i),
 		.tx(tx_o),

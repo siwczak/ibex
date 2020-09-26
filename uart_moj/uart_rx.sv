@@ -13,7 +13,8 @@ module uart_rx #(
 	// Inputs
 	input                  rx,
 	input                  rst,
-	input                  clk
+	input                  clk,
+	input				   we
 );
 
 	localparam clock_divide = (clk_freq/baud_rate);

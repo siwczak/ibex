@@ -16,7 +16,7 @@ module fifo#(
 	reg [FIFO_DEPTH - 1:0] wr_ptr; 
 	reg [FIFO_DEPTH - 1:0] rd_ptr; 
 
-	reg[23:0] fifo_mem[FIFO_DEPTH-1];
+	reg[DATA_WIDTH-1:0] fifo_mem[FIFO_DEPTH-1];
 
 	assign full_o = (full_indicator == 2**FIFO_BIT);
 	assign empty_o = (full_indicator == '0);

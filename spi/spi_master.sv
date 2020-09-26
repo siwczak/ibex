@@ -20,7 +20,19 @@ module spi_master #(
 	input  wire       miso_i        
 );
 
+localparam IDLE_STATE = 2'b00;
+localparam CLOCK_PH2 = 2'b01;
+localparam CLOCK_PH1 = 2'b11;
 
+	// FSM definition
+	/*
+		Aldec enum fsm_enc CURRENT = state
+		Aldec enum fsm_enc STATES = IDLE_STATE, CLOCK_PH2, CLOCK_PH1
+		Aldec enum fsm_enc TRANS = IDLE_STATE -> CLOCK_PH2,
+			CLOCK_PH2 -> CLOCK_PH1,
+			CLOCK_PH1 -> IDLE_STATE,
+			CLOCK_PH1 -> CLOCK_PH2
+	*/
 
 	reg  [7:0]          spcr;       // Serial Peripheral Control  
 	wire [7:0]          spsr;       // Serial Peripheral Status   
@@ -180,9 +192,9 @@ module spi_master #(
 			case (espr) 
 				4'b0000: clkcnt <= 12'h0;   // 2   
 				4'b0001: clkcnt <= 12'h1;   // 4   
-				4'b0010: clkcnt <= 12'h3;   // 16  
-				4'b0011: clkcnt <= 12'hf;   // 32  
-				4'b0100: clkcnt <= 12'h1f;  // 8
+				4'b0010: clkcnt <= 12'h3;   // 8  
+				4'b0011: clkcnt <= 12'hf;   // 16  
+				4'b0100: clkcnt <= 12'h1f;  // 32
 				4'b0101: clkcnt <= 12'h7;   // 64
 				4'b0110: clkcnt <= 12'h3f;  // 128
 				4'b0111: clkcnt <= 12'h7f;  // 256
@@ -200,7 +212,7 @@ module spi_master #(
 	always @(posedge clk_i)
 		if (~spe | rst_i)
 		begin
-			state <= 2'b00; // idle
+			state <= IDLE_STATE; // idle
 			bcnt  <= 3'h0;
 			treg  <= 8'h00;
 			wfre  <= 1'b0;
@@ -213,41 +225,40 @@ module spi_master #(
 			rfwe <= 1'b0;
 
 			case (state) 
-				2'b00: // idle state
-				begin
+				IDLE_STATE:begin // idle state
 					bcnt  <= 3'h7;   // set transfer counter
 					treg  <= wfdout; // load transfer register
 					sck_o <= cpol;   // set sck
 
 					if (~wfempty) begin
 						wfre  <= 1'b1;
-						state <= 2'b01;
+						state <= CLOCK_PH2;
 						if (cpha) sck_o <= ~sck_o;
 					end
 				end
 
-				2'b01: // clock-phase2, next data
+				CLOCK_PH2: // clock-phase2, next data
 					if (ena) begin
 						sck_o   <= ~sck_o;
-						state   <= 2'b11;
+						state   <= CLOCK_PH1;
 					end
 
-				2'b11: // clock phase1
+				CLOCK_PH1: // clock phase1
 					if (ena) begin
 						treg <= {treg[6:0], miso_i};
 						bcnt <= bcnt -3'h1;
 
 						if (~|bcnt) begin
-							state <= 2'b00;
+							state <= IDLE_STATE;
 							sck_o <= cpol;
 							rfwe  <= 1'b1;
 						end else begin
-							state <= 2'b01;
+							state <= CLOCK_PH2;
 							sck_o <= ~sck_o;
 						end
 					end
 
-				2'b10: state <= 2'b00;
+				default: state <= IDLE_STATE;
 			endcase
 		end
 

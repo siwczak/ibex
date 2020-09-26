@@ -19,6 +19,8 @@
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage[super]{natbib}
+\usepackage{tikz}
+\usepackage{ifthen}
 \urlstyle{same}
 \def\code#1{\texttt{#1}}
 \setlength{\parindent}{5mm}
@@ -1312,6 +1314,7 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 		.tx_data_vld_i(valid_i),
 		.rst_i(~wb.rst_ni),
 		.clk_i(wb.clk_i),
+		.we_i(wb.we),
 		.rx_data_vld_o(valid_o),
 		.rx_data_o(uart_data_rx),
 		.rx_parity_err_o(wb.err),
@@ -1444,21 +1447,229 @@ end
 \end{minipage}	
 Parzystość zostaje sprawdzana za pomocą operatorów redukcji \textit{XOR} i \textit{NXOR} zastosowanych na całym wektorze \textit{rx\_data\_reg}. \\
 W fazie \textit{rx\_STOP} blok czeka na pojawienie się określonej ilości bitów stopu. Gdy warunek ten zostanie spełniony stan wraca do \textit{rx\_IDLE} oraz ustawia logiczną jedynkę dla sygnału potwierdzającego odbiór transmisji.
+
+	\subsection{SPI}
+		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
+		\hspace{5mm} W celu poprawnej komunikacji z magistralą \textit{Wishbone} , należało stworzyć moduły \textit{wb\_spi\_master} i \textit{wb\_spi\_slave}. Moduły te zawierają instancje \textit{SPI}, oraz pomocnicze sygnały dla poprawnego przekazywania informacji. Listingi \ref{Lis:spi_master} i \ref{Lis:spi_slave} przedstawiają instancję tych modułów. Parametr \textit{SPI\_SLAVE} określa szerokość wektora wyboru urządzeń \textit{slave}. Sygnał \textit{valid} dla modułu \textit{spi\_slave} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Sygnał wyjściowy powstaje poprzez konkatenację wektora \textit{data\_out} z zerami. Sygnały błędu i zajętości zostały przypisane do zera, ponieważ projekt nie przewiduje ich wystąpienia.\\
+		\begin{minipage}{.49\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:spi_master,caption=Instancja pamięci instrukcji]
+    spi_master#(SPI_SLAVE) spi_master(
+    .clk_i(wb.clk_i),
+    .rst_i(~wb.rst_ni),
+    .cyc_i(wb.cyc),
+    .stb_i(wb.stb),
+    .adr_i(wb.addr[4:2]),
+    .we_i(wb.we),
+    .dat_i(wb.data_m[8-1:0]),
+    .dat_o(data_out),
+    .ack_o(wb.ack),
+    .inta_o(irq_o),
+    .sck_o(sck_o),
+    .cs_o(cs_o),
+    .mosi_o(mosi_o),
+    .miso_i(miso_i));
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage} \hspace{.02\textwidth}
+\begin{minipage}{.49\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:spi_slave,caption=Instancja pamięci danych]
+    spi_slave spi_slave(
+    .clk_i(wb.clk_i),
+    .rst_i(~wb.rst_ni),
+    .tx_dv_i(valid),
+    .tx_byte_i(wb.data_m[8-1:0]),
+    .rx_byte_o(data_out),
+    .rx_dv_o(wb.ack),
+    .spi_clk_i(sck_i),
+    .cs_i(cs_i),
+    .mosi_i(mosi_i),
+    .miso_o(miso_o));
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}\\
+		\subsubsection{\textit{SPI Master}}
+		\hspace{5mm} Moduł \textit{SPI Master} został zaimplementowany na podstawie schematu blokowego przedstawionego na rysunku \ref{Fig:spi_master_block}.\\
+					\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:spi_master_block}}
+					\includegraphics[width=\textwidth,height=9.5cm]{./rysunki/spi_arch.png}
+			\end{minipage} 
+		Rejestry \textit{SPCR}, \textit{SPER}. \textit{SPSR} i \textit{SPDR} znajdują się pod odpowiednim adresem, tabela \ref{Tab:spi_reg} przedstawia je.
+		\\
+ \begin{minipage}{\textwidth}
+		 \begin{center}
+			\captionof{table}{Lista rejestrów \textit{SPI}\label{Tab:spi_reg}}
+				\begin{tabular}{|c|c|c|c|c|}
+					\hline
+					Nazwa & adres & ilość bitów & dostęp & opis \\ 
+					\hline
+					SPCR & 0x00 & 8 & zapis/odczyt & rejestr sterujący \\
+					\hline
+					SPSR & 0x01 & 8 &zapis/odczyt & rejestr statusu \\
+					\hline
+					SPDR & 0x02 & 8 &zapis/odczyt & rejestr danych\\
+					\hline
+					SPER & 0x03 & 8 &zapis/odczyt & rejestr rozszerzeń\\
+					\hline
+					CS & 0x04 & [SPI\_SLAVE-1:0] & zapis/odczyt & rejestr wyboru \textit{slave} \\
+					\hline
+					
+				\end{tabular}
+		\end{center}
+		\end{minipage}	
+\\\\
+Zawartość rejestru \textit{SPCR} jest przedstawiona na rysunku \ref{Fig:spcr}. Dostęp do wszystkich jego bitów jest zapis/odczyt.\\
+\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Rejestr \textit{SPCR}.\label{Fig:spcr}}
+					\includegraphics[width=\textwidth]{./rysunki/spcr.png}
+			\end{minipage} 
+			\begin{itemize}
+				\item Bit 7 \textit{SPIE} - Uaktywnienie przerwań SPI - gdy bit ten jest jedynką logiczną, następuje włączenie przerwań, działa tylko gdy bit \textit{SPIF} w rejestrze \textit{SPER} również jest ustawiony na jedynkę logiczną
+				\item Bit 6 \textit{SPE} - Włączenie SPI - gdy bit ten jest jedynką logiczną, następuje włączenie interfejsu SPI
+				\item Bit 4 \textit{MSTR} - Selekcja trybu \textit{master} - gdy bit ten jest jedynką logiczną, następuje przełączenie urządzenia w tryb \textit{master}, w projekcie bit ten zawsze jest jedynką logiczną
+				\item Bit 3 \textit{CPOL} - Polaryzacja zegara, gdy bit ten jest jedynką logiczną, sygnał \textit{SCK} ma wartość wysoką w stanie nieaktywnym. Gdy bit ten jest zerem logicznym, sygnał \textit{SCK} ma wartość niską w stanie nieaktywnym
+				\item Bit 2 \textit{CPHA} - Faza zegara, gdy bit ten jest jedynką logiczną na zboczu narastającym następuje przygotowanie, na zboczu opadającym następuje próbkowanie. Gdy bit ten jest zerem logicznym, zbocze narastające powoduje fazę próbkowania a opadające fazę przygotowania
+				\item Bit 0 i 1 \textit{SPR} - Wybór częstotliwości zegarowej - bity te kontrolują częstotliwość sygnału \textit{SCK}. Zależność ta, została pokazana w tabeli \ref{Tab:espr}.
+			\end{itemize}
+Zawartość rejestru \textit{SPSR} została przedstawiona na rysunku \ref{Fig:spsr}.\\
+\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Rejestr \textit{SPSR}.\label{Fig:spsr}}
+					\includegraphics[width=\textwidth]{./rysunki/spsr.png}
+			\end{minipage} 
+			\begin{itemize}
+				\item Bit 7 \textit{SPIF} - Znacznik przerwania SPI - po zakończeniu transferu, bitowi jest przypisywana jedynka logiczna, jeśli bit \textit{SPIE} również jest jedynką logiczną, generowany jest sygnał przerwania.
+				\item Bit 6 \textit{WCOL} - Znacznik kolizji zapisu - bitowi jest przypisywana jedynka logiczna jeśli bit \textit{WFFULL} jest w stanie wysokim i odbywa się zapis do rejestru danych.
+				\item Bit 3 \textit{WFFULL} - Znacznik zapełnienia \textit{FIFO} przeznaczonego do zapisu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} zostanie zapełnione,
+				\item Bit 2 \textit{WFEMPTY} - Znacznik pustego \textit{FIFO} przeznaczonego do zapisu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} jest puste
+				\item Bit 1 \textit{WEFULL} - Znacznik zapełnienia \textit{FIFO} przeznaczonego dla odczytu - bitowi jest przypisywana jedynka logiczny, gdy \textit{FIFO} zostanie zapełnione
+				\item Bit 0 \textit{WEEMPTY} - Znacznik pustego \textit{FIFO} przeznaczonego dla odczytu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} jest puste
+			\end{itemize}
+W rejestrze \textit{SPDR} znajdują się dane, przechowywane one są w dwóch \textit{FIFO}, zapisu i odczytu. Ustawienie zera logicznego na bicie \textit{SPE} powoduje wyczyszczenie \textit{FIFO}. \\
+Zawartość rejestru \textit{SPER} jest przedstawiona na rysunku \ref{Fig:sper}.\\
+\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Rejestr \textit{SPER}.\label{Fig:sper}}
+					\includegraphics[width=\textwidth]{./rysunki/sper.png}
+\end{minipage}
+\begin{itemize}
+	\item Bit 6 i 7 \textit{ICNT} - Licznik przerwań - określa potrzebną ilość zakończonych cykli transferowych po których bitowi \textit{SPIF} zostanie przypisana jedynka logiczna. Tabela \ref{Tab:icnt} przedstawia te zależności.
+			\\
+ \begin{minipage}{\textwidth}
+		 \begin{center}
+			\captionof{table}{Lista rejestrów \textit{SPI}\label{Tab:icnt}}
+				\begin{tabular}{|c|c|}
+					\hline
+					ICNT & Opis \\ 
+					\hline
+					2'b00 & \textit{SPIF} jest ustawiany po każdym zakończonym cyklu transferu \\
+					\hline
+					2'b01 & \textit{SPIF} jest ustawiany po dwóch zakończonych cyklach transferu \\
+				\hline
+					2'b10 & \textit{SPIF} jest ustawiany po trzech zakończonych cyklach transferu \\
+					\hline
+					2'b11 & \textit{SPIF} jest ustawiany po czterech zakończonych cyklach transferu \\
+					\hline
+				\end{tabular}
+		\end{center}
+		\end{minipage}	
+	\item Bit 0 i 1 \textit{ESPR} - Rozszerzony wybór częstotliwości czasu - dodaje dodatkowe dwa bity pozwalające ustalić częstotliwość \textit{SCK}. Tabela \ref{Tab:espr} przedstawia te zależności.
+				\\
+ \begin{minipage}{\textwidth}
+		 \begin{center}
+			\captionof{table}{Dzielnik zegara\label{Tab:espr}}
+				\begin{tabular}{|c|c|c|}
+					\hline
+					ESPR & SPR & Dzielnik zegara \\ 
+					\hline
+					2'b00 & 2'b00 & 2\\
+					\hline
+					2'b00 & 2'b01 & 4\\
+					\hline
+					2'b00 & 2'b10 & 16\\
+					\hline
+					2'b00 & 2'b11 & 32\\
+					\hline
+					2'b01 & 2'b00 & 8\\
+					\hline
+					2'b01 & 2'b01 & 64\\
+					\hline
+					2'b01 & 2'b10 & 128\\
+					\hline
+					2'b01 & 2'b11 & 256\\
+					\hline
+					2'b10 & 2'b00 & 512\\
+					\hline
+					2'b10 & 2'b01 & 1024\\
+					\hline
+					2'b10 & 2'b10 & 2048\\
+					\hline
+					2'b10 & 2'b11 & 4096\\
+					\hline
+				\end{tabular}
+		\end{center}
+		\end{minipage}
+\end{itemize} 
+Rejestr \textit{CS} to rejestr wybory urządzeń typu \textit{slave}. \\
+Graf przedstawiony na rysunku \ref{Fig:spi_fsm} przedstawia maszynę stanów odpowiedzialną za transfer informacji. \\
+
+					\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Graf \textit{FSM} \textit{SPI master}.\label{Fig:spi_fsm}}
+					\includegraphics[width=\textwidth,height=5.5cm]{./rysunki/fsm_spi.png}
+			\end{minipage} 
+			 Fazą domyślna jest \textit{IDLE\_STATE}. Jej przebieg został przedstawiony na listingu \ref{Lis:spi_idle}.
+			 \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:spi_idle,caption=Faza \textit{IDLE\_STATE}]
+IDLE_STATE:begin 
+	bcnt  <= 3'h7;   
+	treg  <= wfdout; 
+	sck_o <= cpol;   
+
+	if (~wfempty) begin
+		wfre  <= 1'b1;
+		state <= CLOCK_PH2;
+		if (cpha) sck_o <= ~sck_o;
+	end
+end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}	
+Ustawiany jest pomocniczy licznik przesłanych bitów \textit{bcnt}, przypisywany bajt danych do wektora \textit{treg} pochodzących z \textit{FIFO} oraz ustawiana wartość początkowa \textit{sck\_o}. Jeśli \textit{FIFO} nie było puste rozpoczyna się transmisja. Sygnał \textit{wfre} zezwala na odczyt informacji z \textit{FIFO}, stan przechodzi do następnej fazy \textit{CLOCK\_PH2} oraz ustawiana jest faza zegara. \\
+W stanie \textit{CLOCK\_PH2} sygnał \textit{sck\_o} zostaje zanegowany i następuje kolejny stan \textit{CLOCK\_PH1}. \\
+ Stan \textit{CLOCK\_PH1} odpowiedzialny jest za aktualizację wektora \textit{treg}. Jej przebieg jest przedstawiony na listingu \ref{Lis:spi_clock1}.\\
+ 			 \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:spi_clock1,caption=Faza \textit{CLOCK\_PH1}]
+CLOCK_PH1:
+	if (ena) begin
+		treg <= {treg[6:0], miso_i};
+		bcnt <= bcnt -3'h1;
+
+		if (~|bcnt) begin
+			state <= IDLE_STATE;
+			sck_o <= cpol;
+			rfwe  <= 1'b1;
+		end else begin
+			state <= CLOCK_PH2;
+			sck_o <= ~sck_o;
+		end
+	end
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+		\subsubsection{slave}
+		
+		\hspace{5mm}
+			\\opis spi slave
+
 	\subsection{I2C}
+		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
 		\subsubsection{master}
 		\hspace{5mm}
 			\\opis i2c master
 		\subsubsection{slave}
 		\hspace{5mm}
 			\\opis i2c slave
-
-	\subsection{SPI}
-		\subsubsection{master}
-		\hspace{5mm}
-			\\opis spi master
-		\subsubsection{slave}
-		\hspace{5mm}
-			\\opis spi slave
 
 	\subsection{Timer}
 	\hspace{5mm}

@@ -13,7 +13,8 @@ module uart_tx #(
 	input                 tx_data_vld,         // Data valid
 	input [data_bits-1:0] tx_data_in,          // Input data
 	input                 rst,                 // Active high synchronous reset
-	input                 clk                  // Clock
+	input                 clk,                  // Clock
+	input                 we
 );
 
 	localparam clock_divide = (clk_freq/baud_rate);
@@ -88,7 +89,7 @@ module uart_tx #(
 				clk_div_next = 0;
 				index_bit_next = 0;
 				stop_bits_remaining_next = stop_bits;
-				if(tx_data_vld == 1) begin
+				if(tx_data_vld && we) begin
 					tx_data_next = tx_data_in;
 					tx_NEXT = tx_START;
 				end

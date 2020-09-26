@@ -22,6 +22,7 @@ module wb_uart(
 		.tx_data_vld_i(valid_i),
 		.rst_i(~wb.rst_ni),
 		.clk_i(wb.clk_i),
+		.we_i(wb.we),
 
 		.rx_data_vld_o(valid_o),
 		.rx_data_o(uart_data_rx),
