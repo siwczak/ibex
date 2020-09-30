@@ -8,6 +8,7 @@
 \usepackage{float}
 \usepackage{grffile}
 \usepackage{color}
+\usepackage[fleqn]{amsmath}
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage[figuresleft]{rotating}
@@ -1341,7 +1342,7 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 		\item \textit{parity\_type} - określa bit parzystości, przypisanie zera wyłączy go, jedynki ustawienie go jako bit nieparzystości, dwójki ustawienie go jako bit parzysty. W projekcie bit ten jest wyłączony.
 		\item \textit{stop\_bits} - ilość bitów stopu, dostępny jest wybór między jednym a dwoma bitami. W projekcie występuje jeden bit stopu.
 	\end{itemize}
-	\subsubsection{Transmiter \textit{UART}}
+	\subsubsection{Implementacja transmitera \textit{UART}}
 	Transmiter został zaimplementowany w oparciu o graf FSM przedstawiony na rysunku \ref{Fig:fsm_uart_tx}\\
 				\begin{minipage}[c]{\textwidth}
 				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_tx}}
@@ -1394,7 +1395,7 @@ end
 \end{minipage}
 Parzystość zostaje sprawdzana przy pomocy operatorów redukcji \textit{XOR} lub \textit{NXOR} użytych na całym wektorze \textit{tx\_data\_reg}. Po wysłaniu tej informacji, do zmiennej \textit{tx\_NEXT} zostaje przypisany stan \textit{tx\_STOP}.\\
 W stanie \textit{tx\_STOP} zostaje wysłana odpowiednia ilość bitów stopu. Po dokonaniu tej operacji, stan wraca do \textit{tx\_IDLE}.
-	\subsubsection{Odbiornik \textit{UART}}
+	\subsubsection{Implementacja odbiornika \textit{UART}}
 	Odbiornik został zaimplementowany w oparciu o graf FSM przedstawiony na rysunku \ref{Fig:fsm_uart_rec} \\
 			\begin{minipage}[c]{\textwidth}
 				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_rec}}
@@ -1448,7 +1449,7 @@ end
 Parzystość zostaje sprawdzana za pomocą operatorów redukcji \textit{XOR} i \textit{NXOR} zastosowanych na całym wektorze \textit{rx\_data\_reg}. \\
 W fazie \textit{rx\_STOP} blok czeka na pojawienie się określonej ilości bitów stopu. Gdy warunek ten zostanie spełniony stan wraca do \textit{rx\_IDLE} oraz ustawia logiczną jedynkę dla sygnału potwierdzającego odbiór transmisji.
 
-	\subsection{SPI}
+	\subsection{Interfejs \textit{SPI}}
 		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
 		\hspace{5mm} W celu poprawnej komunikacji z magistralą \textit{Wishbone} , należało stworzyć moduły \textit{wb\_spi\_master} i \textit{wb\_spi\_slave}. Moduły te zawierają instancje \textit{SPI}, oraz pomocnicze sygnały dla poprawnego przekazywania informacji. Listingi \ref{Lis:spi_master} i \ref{Lis:spi_slave} przedstawiają instancję tych modułów. Parametr \textit{SPI\_SLAVE} określa szerokość wektora wyboru urządzeń \textit{slave}. Sygnał \textit{valid} dla modułu \textit{spi\_slave} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Sygnał wyjściowy powstaje poprzez konkatenację wektora \textit{data\_out} z zerami. Sygnały błędu i zajętości zostały przypisane do zera, ponieważ projekt nie przewiduje ich wystąpienia.\\
 		\begin{minipage}{.49\textwidth}
@@ -1657,16 +1658,162 @@ CLOCK_PH1:
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
+Jeśli sygnał \textit{ena} jest w stanie wysokim następuje przesunięcie rejestru i wpisanie na pozycji najmniej znaczącego bitu, informacji pochodzącej z urządzenia \textit{slave}. Następnie licznik przekazanych bitów zostaje dekrementowany, jeśli jego wartość będzie równa zero, stan powraca do \textit{IDLE\_STATE} oraz zezwala na zapis do \textit{FIFO} przechowującego dane z urządzenia \textit{slave}. Do wyprowadzenia \textit{mosi\_o} zostało zastosowane przypisanie ciągłe najbardziej znaczącego bitu wektora \textit{treg}.\\
+Implementacja generatora sygnału zegarowego \textit{sck\_o} została przedstawiona na listingu \ref{Lis:gen_sck}.\\
+ 			 \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:gen_sck,caption=Generowanie sygnału zegarowego]
+always @(posedge clk_i)
+	if(spe & |clkcnt & |state)
+		clkcnt <= clkcnt - 11'h1;
+	else
+		case (espr) 
+			.
+			.
+		endcase
+	reg ena = ~|clkcnt;
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Podczas narastającego zbocza sygnału zegarowego pochądzącego z rdzenia następuje sprawdzanie czy interfejs \textit{SPI} został włączone, poprzedni cykl generowania sygnału czasu \textit{sck\_o} został zakończony i sprawdzenie aktualnego statusu \textit{FSM}, jeśli znajduje się w stanie \textit{IDLE\_STATE} następuje ponowne przypisanie wartości do wektora \textit{clkcnt}. Wartości zapisywane do tego wektora są przedstawione w tabeli \ref{Tab:espr}. Jeśli wszystkie warunki zostały spełnione, następuje dekrementacja rejestru \textit{clkcnt}. Jeśli będzie równy zeru, stan wysoki zostanie przypisany do sygnału \textit{ena}, jest on używany w fazach \textit{FSM}.\\
+Do magazynowania danych przeznaczono dwa bufory \textit{FIFO}, dla danych wejściowych i wyjściowych, każdy o parametryzowanej głębokości, w projekcie parametr ten jest równy cztery. Posiada znacznik zapełnienia jak i pustego buforu. Gdy nadejdzie sygnał zapisu, licznik zapełnienia \textit{FIFO} zostaje inkrementowany, dane zostają zapisane do komórki i pozycja komórki przeznaczonej dla zapisu zostaje inkrementowana. Podczas odczytu licznik zapełnienia zostaje dekrementowany, dana zostaje odczytana z buforu, znacznik pozycji odczyty zostaje inkrementowany. Gdy bufor jest pełny, zapis jest niedostępny, jeśli bufor jest pusty, odczyt jest niedostępny. Listing \ref{Lis:fifo} przedstawia przebieg tych faz.\\
+ 			 \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:fifo,caption=Model \textit{FIFO}]
+case ({rd_i, wr_i})
+	2'b00: begin
+		full_indicator <= full_indicator;
+	end
+	2'b01: begin
+		if  (full_indicator < 2**FIFO_BIT)	begin
+			full_indicator <= full_indicator + 1;
+			fifo_mem[wr_ptr] <= data_i;
+			wr_ptr <= wr_ptr + 1;
+		end
+	end
+	2'b10: begin
+		if (full_indicator > 0)	begin
+			data_o <= fifo_mem[rd_ptr];
+			full_indicator <= full_indicator - 1;
+			rd_ptr <= rd_ptr + 1;
+		end
+	end
+	2'b11: begin
+		wr_ptr <= wr_ptr + 1;
+		rd_ptr <= rd_ptr + 1;
+		data_o <= fifo_mem[rd_ptr];
+		fifo_mem[wr_ptr] <= data_i;
+		full_indicator <= full_indicator;
+	end
+endcase
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
 		\subsubsection{slave}
 		
-		\hspace{5mm}
-			\\opis spi slave
+		\hspace{5mm} CHUJOWO CHODZI DO POPRAWIENIA!
+			
 
-	\subsection{I2C}
+	\subsection{Interfejs \textit{I2C}}
 		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
-		\subsubsection{master}
-		\hspace{5mm}
-			\\opis i2c master
+		W celu poprawnej komunikacji z magistralą należało stworzyć dodatkowy moduł. Jego celem jest poprawne połączenia instancji \textit{I2C} która została przedstawiona na listingu \ref{Lis:i2c_is} z interfejsem.\\
+ 			 \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:i2c_is,caption=Bufor trójstanowy]
+	i2c_top i2(
+		.wb_clk_i(wb.clk_i),
+		.wb_rst_i(!wb.rst_ni),
+		.arst_i(1'b0),
+		.wb_adr_i(wb.addr[4:2]),
+		.wb_dat_i(wb.data_m[7:0]),
+		.wb_dat_o(data_o),
+		.wb_we_i(wb.we),
+		.wb_stb_i(wb.stb),
+		.wb_cyc_i(wb.cyc),
+		.wb_ack_o(wb.ack),
+		.wb_inta_o(),
+		.scl_pad_i(scl_pad_i),
+		.scl_pad_o(scl_pad_o),
+		.scl_padoen_o(scl_padoen_o),
+		.sda_pad_i(sda_pad_i),
+		.sda_pad_o(sda_pad_o),
+		.sda_padoen_o(sda_padoen_o)	);
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}		
+Sygnały \textit{SDA} i \textit{SCL} są dwukierunkowe, należało więc zastosować bufory trójstanowe w celu  wprowadzenia stanu wysokiej impedancji by unikać konfliktów stanu podczas transmisji innego urządzenia.  Jego opis został przedstawiony na listing \ref{Lis:3state}.\\
+ 			 \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:3state,caption=Bufor trójstanowy]
+	assign IO_SCL = scl_padoen_o ? 'bz : scl_pad_o;
+	assign IO_SDA = sda_padoen_o ? 'bz : sda_pad_o;
+	assign scl_pad_i = IO_SCL;
+	assign sda_pad_i = IO_SDA;
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+		\subsubsection{Implementacja \textit{I2C}}
+		\hspace{5mm} Interfejs \textit{I2C} został zaimplementowany na podstawie architektury przedstawionej na rysunku \ref{Fig:I2C_arch}. \\
+			\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Architektura interfejsu \textit{I2C}.\label{Fig:I2C_arch}}
+					\includegraphics[width=\textwidth,height=5.6cm]{./rysunki/i2c_arch.png}
+			\end{minipage} 
+			By uzyskać dostęp dla danego rejestru należy odwołać się do poprawnego adresu. Tabela \ref{Tab:I2C_reg} przedstawia przypisane adresy dla danego rejestru.\\
+			 \begin{minipage}{\textwidth}
+		 \begin{center}
+			\captionof{table}{Lista rejestrów interfejsu\textit{I2C}\label{Tab:I2C_reg}}
+				\begin{tabular}{|c|c|c|c|c|}
+					\hline
+					Nazwa & adres & ilość bitów & dostęp & opis \\ 
+					\hline
+					PRERlo & 0x00 & 8 & zapis/odczyt & Preskaler zegara, niski baj \\
+					\hline
+					PRERhi & 0x01 & 8 &zapis/odczyt & Preskaler zegara, wysoki bajt \\
+					\hline
+					CTR & 0x02 & 8 &zapis/odczyt & Rejestr kontrolny\\
+					\hline
+					TXR & 0x03 & 8 &zapis & Rejestr nadawczy\\
+					\hline
+					RXR & 0x03 & 8 & odczyt & Rejestr odbiorczy \textit{slave} \\
+					\hline
+					CR & 0x04 & 8 & zapis & Rejestr poleceń\\
+					\hline
+					SR & 0x04 & 8 & odczyt & Rejestr stanu\\
+					\hline
+					SLA & 0x07 & 7 &zapis/odczyt & Rejestr adresu slave\\
+					\hline
+				\end{tabular}
+		\end{center}
+		\end{minipage}
+		\\\\Rejestr preskalera służy do ustalenia częstotliwości sygnału zegarowego \textit{SCL}. Wartość jaką należy wpisać do tego rejestru można obliczyć wzorem \ref{eq:i2c_pre}.
+\begin{equation} \label{eq:i2c_pre}
+					preskaler = \dfrac{wb\_clk\_i}{5*SCL}-1	
+\end{equation}
+Rejestr \textit{CTR} został przedstawiony na rysunku \ref{Fig:I2C_ctr}.\\
+			\begin{minipage}[c]{\textwidth}
+				\captionof{figure}{Rejestr kontrolny.\label{Fig:I2C_ctr}}
+					\includegraphics[width=\textwidth]{./rysunki/ctr_i2c.png}
+			\end{minipage} 
+			\begin{itemize}
+				\item Bit 7 - EN - Uaktywnienie interfejsu \textit{I2C} - gdy bit ten jest logiczną jedynką interfejs \textit{I2C} jest aktywny, przypisanie zera logicznego dezaktywuje go.
+				\item Bit 6 - IEN - Uaktywnienie przerwań - gdy bit ten jest logiczną jedynką przerwania interfejsu \textit{I2C} zostają włączone.
+				\item Bit 5 - SE - Uaktywnienie trybu \textit{slave} - gdy bit ten jest logiczną jedynką następuje zmiana trybu z \textit{master} na \textit{slave}.
+			\end{itemize}
+			Rejestr nadawczy i odbiorczy składają się z jednego bajtu który zostanie nadany lub został odebrany.\\
+			Rejestr \textit{CR} został przedstawiony na rysunku \ref{Fig:i2c_cr}.\\
+	\begin{minipage}[c]{\textwidth}
+	\captionof{figure}{Rejestr kontrolny.\label{Fig:i2c_cr}}
+					\includegraphics[width=\textwidth]{./rysunki/cr_i2c.png}
+	\end{minipage} 
+\begin{itemize}
+	\item Bit 7 - STA - wysyła sygnał startu
+	\item Bit 6 - STOP - wysyła sygnał stopu
+	\item Bit 5 - RD - Odczyt - gdy zostanie wpisana jedynka logiczna do tego bitu, dane zostaną odczytane z urządzenia \textit{slave}
+	\item Bit 4 - WR - Zapis - gdy zostanie wpisana jedynka logiczna do tego bitu, dane zostaną zapisane do urządzenia \textit{slave}
+	\item Bit 3 - ACK - Bit potwierdzenia - wysłanie bitu \textit{NACK} gdy jest przypisane logiczna jedynka lub wysłanie bitu \textit{ACK} gdy jest przypisane logiczne zero.
+	\item Bit 1 - IACK - Bit przerwania potwierdzenia - gdy zostanie przypisana jedynka, czyści wysyłanie przerwania.
+\end{itemize}
+Rejestr \textit{SR} został przedstawiony na rysunku \ref{Fig:i2c_sr}
 		\subsubsection{slave}
 		\hspace{5mm}
 			\\opis i2c slave
