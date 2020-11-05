@@ -12,7 +12,7 @@ module wb_i2c(
 	assign wb.stall = 1'b0;
 	assign wb.err   = 1'b0;
 
-	i2c_master_top i2c_master(
+	i2c_top i2c(
 		.wb_clk_i(wb.clk_i),
 		.wb_rst_i(!wb.rst_ni),
 		.arst_i(1'b0),

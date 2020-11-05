@@ -39,8 +39,7 @@ int main(int argc, char **argv) {
   *var = 0;
 
   while (1) {
-   // usleep(1000 * 1000); // 1000 ms
-    usleep(1 * 100);
+    usleep(10 * 1);
     *var = *var + 1;
   }
 }

@@ -1,0 +1,18 @@
+\documentclass[12pt,a4paper]{article} 
+\title{Abstrakt}
+\author{Dawid Zimonczyk}
+\date{\today}
+\usepackage[a4paper, left=3cm, right=2.5cm, top=2.5cm, bottom=2.5cm, headsep=1.5cm]{geometry}
+\usepackage[T1]{fontenc}
+
+\usepackage[polish,english]{babel}
+\usepackage[utf8]{inputenc}
+\begin{document}
+\renewcommand{\abstractname}{Abstrakt}
+\begin{abstract}
+
+Celem pracy dyplomowej było zaprojektowanie oraz zaimplementowanie systemu na chipie, który zostanie uruchomiony na płytce FPGA Nexys4 DDR. Mikroprocesor który został użyty to rdzeń Ibex, który wykorzystuje architekturę RISC-V. W ramach projektu należało przystosować rdzeń do płytki FPGA oraz zaimplementować pamięć RAM, magistralę WISHBONE i dodatkowe peryferia: SPI, I2C. GPIO, UART. Całość została opisana w języku SystemVerilog. W pracy zostały przedstawione informacje na temat architektury procesów RISC-V, specyfikacji ISA, grafy przedstawiające przejścia pomiędzy stanami zaimplementowanych peryferii. Weryfikacja rdzenia, pamięci RAM i peryferii została przeprowadzona z wykorzystaniem biblioteki UVM 1.2. Programy testowe dla rdzenia zostały wygenerowane poprzez RISCV-DV. Narzędzie te generuje skomplikowane programy assembler, ich zadaniem jest sprawdzenie danej funkcjonalności rdzenia. Wszystkie testy uzyskały wynik pozytywny. Test pamięci RAM opiera się na losowym zapisie danych w losowy adres, dane te zostają również zapisane w tablicy asocjacyjnej, po każdej ukończonej transmisji, zawartość tabeli jest porównywana z zawartością pamięci RAM. Peryferia są weryfikowane poprzez podanie losowych danych na ich wejście i monitorowanie sygnałów wyjściowych, po każdej skończonej transmisji zostaje przeprowadzona komparacja. Synteza została przeprowadzona za pomocą programu Vivado 2019.2. W pracy została przedstawiona tabela określająca wykorzystanie zasobów płytki FPGA oraz
+sche-mat połączeń który został uzyskany po przeprowadzeniu syntezy. System na chipie został uruchomiony na płytce FPGA, do pamięci został wgrany program, który zwiększa wartość jednego z rejestrów oraz wyświetla jego wartość na diodach LED. Do projektu został dołączony kompilator skrośny wraz z przykładowym Makefilem, pozwala to na kompilację dodatkowych programów. Zaproponowano również dalszy rozwój projektu  
+
+\end{abstract}
+\end{document}

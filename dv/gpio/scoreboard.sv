@@ -19,18 +19,18 @@ class scoreboard extends uvm_scoreboard;
 		slave_pattern = item.button;
 
 			if ((item.data_s != slave_pattern) && item.sel_but) begin
-				`uvm_error("SCBD", $sformatf("ERROR ! out=%0d exp=%0d",
+				`uvm_error("test_pass", $sformatf("ERROR ! out=%0d exp=%0d",
 						item.data_s, slave_pattern))
 				end else begin
-				`uvm_info("SCBD", $sformatf("PASS ! out=%0d exp=%0d",
+				`uvm_info("test_pass", $sformatf("PASS ! out=%0d exp=%0d",
 						item.data_s, slave_pattern), UVM_LOW)
 				end
 	
 			if ((item.led != led_pattern) && item.sel_led) begin
-				`uvm_error("SCBD", $sformatf("ERROR ! out=%0d exp=%0d",
-						item.led, led_pattern))
+				`uvm_info("test_pass", $sformatf("ERROR ! out=%0d exp=%0d",
+						item.led, led_pattern), UVM_LOW)
 				end else begin
-				`uvm_info("SCBD", $sformatf("PASS ! out=%0d exp=%0d",
+				`uvm_info("test_pass", $sformatf("PASS ! out=%0d exp=%0d",
 						item.led, led_pattern), UVM_LOW)
 				end
  

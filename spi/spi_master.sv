@@ -190,24 +190,24 @@ localparam CLOCK_PH1 = 2'b11;
 			clkcnt <= clkcnt - 11'h1;
 		else
 			case (espr) 
-				4'b0000: clkcnt <= 12'h0;   // 2   
-				4'b0001: clkcnt <= 12'h1;   // 4   
-				4'b0010: clkcnt <= 12'h3;   // 8  
-				4'b0011: clkcnt <= 12'hf;   // 16  
-				4'b0100: clkcnt <= 12'h1f;  // 32
-				4'b0101: clkcnt <= 12'h7;   // 64
-				4'b0110: clkcnt <= 12'h3f;  // 128
-				4'b0111: clkcnt <= 12'h7f;  // 256
-				4'b1000: clkcnt <= 12'hff;  // 512
-				4'b1001: clkcnt <= 12'h1ff; // 1024
-				4'b1010: clkcnt <= 12'h3ff; // 2048
-				4'b1011: clkcnt <= 12'h7ff; // 4096
+				4'b0000: clkcnt <= 12'h1;   // 2   
+				4'b0001: clkcnt <= 12'h3;   // 4   
+				4'b0100: clkcnt <= 12'h7;   // 8  
+				4'b0010: clkcnt <= 12'hf;   // 16  
+				4'b0011: clkcnt <= 12'h1f;  // 32
+				4'b0101: clkcnt <= 12'h3f;   // 64
+				4'b0110: clkcnt <= 12'h7f;  // 128
+				4'b0111: clkcnt <= 12'hff;  // 256
+				4'b1000: clkcnt <= 12'h1ff;  // 512
+				4'b1001: clkcnt <= 12'h3ff; // 1024
+				4'b1010: clkcnt <= 12'h7ff; // 2048
+				4'b1011: clkcnt <= 12'hfff; // 4096
 				default : clkcnt <= 12'hfff;
 			endcase
 
 	// generate clock enable signal
-	wire ena = ~|clkcnt;
-
+	bit ena;
+	assign ena = ~|clkcnt;
 	// transfer statemachine
 	always @(posedge clk_i)
 		if (~spe | rst_i)

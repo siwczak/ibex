@@ -8,7 +8,7 @@ class spi_seq_item extends uvm_sequence_item;
 	logic       stb_i;        
 	logic [2:0] adr_i;        
 	logic       we_i;         
-	rand logic   [3:0] dat_i;        
+	rand logic   [7:0] dat_i;        
 	logic  [7:0] dat_o;        
 	logic        ack_o;        
 	logic        inta_o;       

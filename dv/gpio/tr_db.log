@@ -1,0 +1,3 @@
+  CREATE_STREAM @290 {NAME:seq T:Transactions SCOPE:uvm_test_top.e0.a0.s0 STREAM:704}
+  CREATE_STREAM @290 {NAME:seq T:Transactions SCOPE:uvm_test_top.e0.a0.s0 STREAM:704}
+  CREATE_STREAM @290 {NAME:seq T:Transactions SCOPE:uvm_test_top.e0.a0.s0 STREAM:704}

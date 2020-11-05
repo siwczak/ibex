@@ -28,7 +28,7 @@ logic cs=1;
 	.rx_dv_o(spi_interface.rx_dv_o),
 	.rx_byte_o(spi_interface.dat_i),
 	.tx_dv_i(spi_interface.ack_o),
-	.tx_byte_i(spi_interface.dat_o),
+	.tx_byte_i(spi_interface.dat_i),
 	.spi_clk_i(spi_interface.sck_o),
 	.miso_o(),
 	.mosi_i(spi_interface.mosi_o),

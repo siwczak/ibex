@@ -39,11 +39,11 @@ class uart_driver extends uvm_driver #(uart_trans);
 			vif.start <= 0;
 			if(vif.tx_active == 0) begin
 				`uvm_info(get_full_name(), $sformatf("\t start = %0b, \t tx_data_in = %0h,\t tx_active = %0b",vif.start,req.tx_data_in,vif.tx_active),UVM_LOW)  
-				`uvm_info(get_full_name(),"[TRANSACTION]::TX PASS",UVM_LOW)  
+				`uvm_info(get_full_name(),"TX PASS",UVM_LOW)  
 				end
 			else begin
 				`uvm_info(get_full_name(), $sformatf("\t start = %0b, \t tx_data_in = %0h,\t tx_active = %0b",vif.start,req.tx_data_in,vif.tx_active),UVM_LOW)  
-				`uvm_info(get_full_name(),"[TRANSACTION]::TX PASS",UVM_LOW)  
+				`uvm_info(get_full_name(),"TX FAIL",UVM_LOW)  
 				end  
 			repeat(100) @(posedge vif.clk);
 			//Test rx
@@ -61,11 +61,11 @@ class uart_driver extends uvm_driver #(uart_trans);
 			`uvm_info(get_full_name(), $sformatf("\t Expected data = %0h, \t Obtained data = %0h", data,vif.rx_data_out),UVM_LOW)  
 			begin
 				if(vif.rx_data_out == data) begin
-					`uvm_info(get_full_name(),"[TRANSACTION]::RX PASS",UVM_LOW)  
+					`uvm_info(get_full_name(),"RX PASS",UVM_LOW)  
 					`uvm_info(get_full_name(),"---------------------------------------------",UVM_LOW)  
 					end
 				else begin 
-					`uvm_info(get_full_name(),"[TRANSACTION]::RX FAIL",UVM_LOW)  
+					`uvm_info(get_full_name(),"RX FAIL",UVM_LOW)  
 					`uvm_info(get_full_name(),"---------------------------------------------",UVM_LOW)  
 					end
 			end

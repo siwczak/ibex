@@ -40,7 +40,7 @@ module tb_uart_top;
 	initial
 	begin
 		uvm_config_db #(virtual uart_intf)::set(null, "*", "uart_intf", intf);
-		void'(uvm_config_db #(int)::set(null,"*","no_of_transactions",10));
+		void'(uvm_config_db #(int)::set(null,"*","no_of_transactions",20));
 
 		uvm_top.finish_on_completion = 1;
 

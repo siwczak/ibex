@@ -1,4 +1,4 @@
-module i2c_master_top
+module i2c_top
 import i2c_package::*;
 	(
 		//WISHBONE SIGNAL

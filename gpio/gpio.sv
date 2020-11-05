@@ -14,22 +14,30 @@ module gpio(
 	logic [3:0] data_button='0;
 
 	always @(posedge clk_i or posedge rst_ni)
-		if (!rst_ni)
+		if (!rst_ni) begin
 			led <= '0;
-		else
+			data_button <= '0;
+		end
+		else begin
 		if (valid && we && sel_led) begin
 			led <= data_m[3:0];
 			data_s <= led;
 		end
-
-	always @(posedge clk_i or posedge rst_ni)
-		if (!rst_ni)
-			data_button <= '0;
-		else
+		
 		if (valid && we && sel_but) begin
 			data_button <= button;
 			data_s <= data_button;
 		end
+		
+        end
+//	always @(posedge clk_i or posedge rst_ni)
+//		if (!rst_ni)
+//			data_button <= '0;
+//		else
+//		if (valid && we && sel_but) begin
+//			data_button <= button;
+//			data_s <= data_button;
+//		end
 	//assign data_s = led;
 
 endmodule

@@ -53,8 +53,7 @@ module fifo#(
 						rd_ptr <= rd_ptr + 1;
 					end
 				end
-				2'b11: // read+write
-				begin
+				2'b11: begin
 					wr_ptr <= wr_ptr + 1;
 					rd_ptr <= rd_ptr + 1;
 					data_o <= fifo_mem[rd_ptr];

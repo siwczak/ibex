@@ -1,5 +1,6 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article} 
 \usepackage[a4paper, left=3cm, right=2.5cm, top=2.5cm, bottom=2.5cm, headsep=1.5cm]{geometry}
+\linespread{1.3}
 \usepackage{graphicx}
 \usepackage[T1]{fontenc}
 \usepackage[polish]{babel}
@@ -8,18 +9,18 @@
 \usepackage{float}
 \usepackage{grffile}
 \usepackage{color}
+\usepackage[super]{natbib}
 \usepackage[fleqn]{amsmath}
-\usepackage{xcolor}
 \usepackage{listings}
 \usepackage[figuresleft]{rotating}
 \usepackage{multirow}
 \usepackage{subfig}
 \selectlanguage{polish}
 \usepackage{makecell}
+\usepackage{hyperref}
 \usepackage{bytefield}
 \usepackage{listings}
 \usepackage{hyperref}
-\usepackage[super]{natbib}
 \usepackage{tikz}
 \usepackage{ifthen}
 \urlstyle{same}
@@ -40,7 +41,7 @@ name = Tabela
 \begin{center}
 	\centering
 
-\includegraphics[width=4cm]{./rysunki/logo.jpg}
+\includegraphics[width=4cm]{./rysunki/logo_3.jpg}
 \\
 \vspace{1.5cm}
  
@@ -74,23 +75,22 @@ name = Tabela
 
 \end{flushleft}
  \vspace{2.5cm}
-\Large Gliwice, wrzesień 2020
+\Large Gliwice, listopad 2020
 
 
 \end{center}
 \thispagestyle{empty}
 
 
+\newpage
 
 \thispagestyle{empty}
-\setcounter{page}{2}
-
-\newpage
 
 \begin{center}
-\textbf {\Large Od autora}
+
 \newpage
 \end{center}
+\setcounter{page}{3}
 \large\tableofcontents 
 
 \newpage
@@ -101,35 +101,41 @@ name = Tabela
 
 \newpage
 \begin{flushleft}
-\textbf {\Large Spis ważniejszych oznaczeń}
+\begin{Large}
+\textbf {Spis ważniejszych oznaczeń}\newline
+
+\end{Large}
 
 SoC - System on Chip
-\\ISA - instruction set architecture
+\\ISA - Instruction Set Architecture
 \\RISC - Reduced Instruction Set Computing
 \\UVM - Universal Verification Methodology
 \\I2C - Inter-Integrated Circuit
 \\SPI - Serial Peripheral Interface
-\\UART - universal asynchronous receiver-transmitter
-\\RAM - random-access memory
+\\UART - Universal asynchronous receiver-transmitter
+\\RAM - Random-access memory
 \\PWM - Pulse-Width Modulation
-\\GPIO - general-purpose input/output
-\\FPGA - field-programmable gate array
-\\ISS - instruction set simulator
+\\GPIO - General-purpose input/output
+\\RoT - Root of trust
+\\FPGA - Field-programmable gate array
+\\ISS - Instruction set simulator
 \\SV - SystemVerilog
-\\DV - design verification
+\\DV - Design verification
 \\ISP - In-System Programming
 \\JTAG - Joint Test Action Group
-\\PC - program counter
-\\LSB - least significant bit
-\\MSB - most significant bit
-\\IP - intellectual property
+\\PC - Program counter
+\\LSB - Least significant bit
+\\MSB - Most significant bit
+\\IP - Intellectual property
 \\TLM - Transaction Level Modeling
 \\DUT - Device under test
 \\TCL - Tool Command Language
-%\\HDL - hardware description language
-\\PLL - phase-locked loop
+\\HDL - Hardware description language
+\\PLL - Phase-locked loop
 \\Pmod - Peripheral Module interface
 \\ALU - Arithmetic Logic Unit 
+\\LUT - Look-up Table
+\\BRAM - Blocks RAM
 \end{flushleft}
 \vspace{0.5cm}
 
@@ -139,78 +145,66 @@ SoC - System on Chip
 
 	\subsection{Wstęp}
 	\hspace{5mm}
-Systemy na chipie znane również jako SoC, występują między innymi w naszych telefonach czy samochodach. Również są częścią systemów wbudowanych, te zaś są wykorzystywane w każdej dziedzinie życia, od zegarków elektronicznych po zaawansowane roboty medyczne. Ważne jest więc by układy te były niezawodne i działały w zamierzony sposób. W celu weryfikacji działania układów, są wykorzystywane symulatory języków opisu sprzętu takie jak Riviera-PRO.
+Systemy na chipie znane również jako SoC, występują między innymi w naszych telefonach czy samochodach. Również są częścią systemów wbudowanych, te zaś są wykorzystywane w każdej dziedzinie życia, od zegarków elektronicznych po zaawansowane roboty medyczne. Ważne jest więc by układy te były niezawodne i działały w zamierzony sposób. By zweryfikować działanie zaimplementowanego systemu na chipie wykorzystano symulator języków opisu sprzętu Riviera-PRO.
 \\
+SoC powinien składać się z mikroprocesora, mikrokontrolera lub rdzenia DSP. Każdy mikroprocesor posiada 'Model programowy procesora' (ang Instruction Set Architecture, ISA). Model ISA definiuje jak mikroprocesor powinien działać, jego listę rozkazów, typ danych, tryby adresowania, rejestry dostępne dla programisty, zasady obsługi przerwań i wyjątków. Przykładowe komercyjne modele ISA to: ARM, MIPS. Jest również otwarty model programowy procesora, który jest oparty o zasady RISC, jest nim RISC-V. Otwarty standard ISA oznacza, że dostęp nie jest limitowany prawnie, finansowo lub tajemnicą handlową firmy.
 \\
-SoC powinien składać się z mikroprocesora, mikrokontrolera lub rdzenia DSP. Każdy mikroprocesor posiada 'Model programowy procesora' (ang Instruction Set Architecture, ISA). ISA definiuje jak mikroprocesor powinien działać, jego listę rozkazów, typ danych, tryby adresowania, rejestry dostępne dla programisty, zasady obsługi przerwań i wyjątków. Przykładowe komercyjne ISA: ARM, MIPS, Power ISA. Jest również otwarty model programowy procesora, który jest oparty o zasady RISC, jest nim RISC-V. Otwarta standard ISA oznacza, że dostęp nie jest limitowany prawnie, finansowo lub tajemnicą handlową firmy.
-\newline
-\newline
-Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworzony przez lowRISC, wywodzącego się z Uniwersytety w Cambridge. Mikroprocesor ten jest 32bit, składa się z 2-stage pipileine i został zaimplementowany na bazie RV32IMC.
+Przykładem mikroprocesora wykorzystującego architekturę RISC-V jest Ibex. Jest on tworzony przez stowarzyszenie lowRISC, powstałym na Uniwersytecie w Cambridge. Mikroprocesor ten jest 32-bitowy, składa się z 2-poziomowego potoku i został zaimplementowany na bazie RV32IMC.
 
 
-	\subsection{Cel i zakres pracy}
+\subsection{Cel i zakres pracy}
 	\hspace{5mm}
-	Celem pracy jest implementacja SoC na podstawie mikroprocesora Ibex RISC-V. Mikroprocesor należy przystosować do implantacji na płytce FPGA NEXYS4DDR oraz dodać odpowiednie peryferia. Następnie przeprowadzić weryfikację zaimplementowanego systemu na chipie poprzez przeprowadzenie symulacji korzystając z biblioteki UVM 1.2 i testów RISCV complience. Weryfikacji zostanie poddany cały SoC jak i poszczególne peryferia.\newline
-	Zakres pracy obejmuje:
+	Celem pracy jest implementacja systemu na chipie z użyciem mikroprocesora Ibex RISC-V. Praca obejmuje zadania związane z przystosowaniem mikroprocesora Ibex RISC-V do implantacji na płycie uruchomieniowej NEXYS4DDR wraz implementacją modułów peryferyjnych. Zakres pracy obejmuje również weryfikację zaimplementowanego systemu z wykorzystaniem metodyki UVM (wer. 1.2).\newline
+	Szczegółowy zakres pracy obejmuje:
 	\begin{itemize}
-	  \item Implementacje mikroprocesora IBEX
-	  \item Implementacje peryferii:
+	  \item implementację mikroprocesora Ibex RISC-V,
+	  \item implementację modułów peryferyjnych, w skład których wchodzą:
 	  \begin{enumerate}
-	  	\item RAM
-	  	\item SPI
-	  	\item I2C
-	  	\item UART
-	  	\item GPIO
-	  	\item Timer
+	  	\item pamięć RAM,
+	  	\item interfejs SPI,
+	  	\item interfejs I2C,
+	  	\item interfejs UART,
+	  	\item moduł wejść/wyjść GPIO,
+	  	\item moduł Timera,
 	  \end{enumerate}
-	  \item Kompilacja toolchaina i przystosowanie go dla SoC
-	  \item Przeprowadzenie weryfikacji
-  	  \item Porównanie wyników dla poszczególnych architektur i pamięci
-  	  \item Podsumowanie wyników pracy
+	  \item przeprowadzenie syntezy systemu oraz w rozbiciu na poszczególne moduły,
+	  \item kompilację kompilatora skrośnego i przystosowanie go dla opracowanego systemu,
+	  \item przeprowadzenie weryfikacji,
+  	\item napisanie pracy.
 	\end{itemize}
 
 	\subsection{Zarys pracy}
 	\hspace{5mm}
-	Praca składa się z 6 rozdziałów. Pierwszy zawiera krótkie omówienie tematu pracy, jej celu i zarys. Drugi rozdział jest poświęcony teorii. Opisuje on zagadnienia związane z ISA RISC-V, SoC, mikroprocesorem Ibex, kompilatorem, weryfikacją, płytce FPGA Nexys4 DDR i programem wykorzystanym do syntezy oraz programem do symulacji. Trzeci rozdział skupia się na implementacji poszczególnych części systemu na chipie, przedstawione zostaną w nim fragmentu opisu sprzętu, schematy blokowe i FSM. Czwarty rozdział przedstawia weryfikacje, opisuje przebiegające fazy biblioteki UVM 1.2 oraz jej wyniki. Następnie pokazuje symulację przeprowadzaną z instrukcjami wygenerowanymi przez RISCV-DV, Wyniki tej symulacji zostaną porównane z ISS Ovpsim i Spike. W piątym rozdziale zostaną porównane wyniki symulacji oraz syntezy architektury Von Neumanna z architekturą Harvardzką, pamięć RAM jedno-portowa z pamięcią RAM dwu-portową. Ostatni rozdział to podsumowanie oraz propozycję dalszego rozwoju projektu.
+	Praca składa się z sześciu rozdziałów. Pierwszy zawiera krótkie omówienie tematu pracy, jej celu i zarys. Drugi rozdział jest poświęcony teorii. Opisuje on zagadnienia związane z ISA RISC-V, SoC, mikroprocesorem Ibex, kompilatorem, weryfikacją, płytce FPGA Nexys4 DDR i programem wykorzystanym do syntezy oraz programem do symulacji. Trzeci rozdział skupia się na implementacji poszczególnych części systemu na chipie, przedstawione zostaną w nim fragmentu opisu sprzętu i schematy blokowe. Czwarty rozdział przedstawia weryfikacje, opisuje testy z wykorzystaniem biblioteki UVM 1.2 oraz jej wyniki. Następnie pokazuje symulację przeprowadzaną z instrukcjami wygenerowanymi przez RISCV-DV. Szósty rozdział przedstawia wyniki syntezy poszczególnych modułów oraz eksperymenty związane ze zmianą parametrów syntezy.  Ostatni rozdział to podsumowanie.
 \newpage
 	
 \section{Część teoretyczna}
 
 	\subsection{RISC V}
 
-		\subsubsection{Instruction set architecture ISA}
+		\subsubsection{Specyfikacja ISA}
 		\hspace{5mm}
-		RISC-V to otwarta ISA bazująca na architekturze RISC. Oznacza to, że licensja jest typu Open-source, która pozwala na wprowadzanie dowonlych modyfikacji\cite{open_source}, również jest nie wymaga żadnych opłat za wykorzystywanie jej w komercyjnych celach. Dokumentacja składa się z trzech części\cite{isa_site}:
+		Idea RISC-V jest związana z otwartym ISA bazująca na architekturze RISC. Oznacza to, że licencja jest typu Open-source. Pozwala na wprowadzanie dowonlych modyfikacji\cite{open_source}, również jest nie wymaga żadnych opłat za wykorzystywanie jej w komercyjnych celach. Dokumentacja składa się z trzech części\cite{isa_site}:
 		\begin{enumerate}
-			\item User-Level ISA Specification - specyfikacja ISA poziomu użytkownika
-			\item Privileged ISA Specifiation - specyfikacja ISA przywilejów
-			\item Debug Specification - specyfikacja debugowania 
+			\item User-Level ISA Specification - specyfikacja ISA poziomu użytkownika.
+			\item Privileged ISA Specifiation - specyfikacja ISA trybu przywilejów.
+			\item Debug Specification - specyfikacja \textit{debugowania}. 
 		\end{enumerate}
 		Podstawowe cechy architektury RISC to:
 		\begin{itemize}
-		\item Zredukowana lista rozkazów, jest ich kilkadziesiąt
-		\item Przepustowość procesora zbliżona do jednej instrukcji na cylk
-		\item Zredukowana tryby adresowania, kody rozkazów są prostsze
-		\item Powiększenie liczby rejestrów
-		\item Minimalizacja komunikacja między procesorem a pamięcią
-		\item Instrukcje mogą operować na dowolnych rejestrach
-		\item Instrukcje zajmują w pamięci taką samą liczbę bajtów
-		\item Procesor posiada architekturę Harwardzką
-		\item Procesor używa przetwarzania potokowego
+		\item zredukowana lista rozkazów - jest ich kilkadziesiąt,
+		\item przepustowość procesora zbliżona do jednej instrukcji na cykl,
+		\item zredukowana tryby adresowania, kody rozkazów są prostsze,
+		\item minimalizacja komunikacji między procesorem a pamięcią,
+		\item instrukcje mogą operować na dowolnych rejestrach,
+		\item instrukcje zajmują w pamięci taką samą liczbę bajtów,
+		\item procesor posiada architekturę Harwardzką,
+		\item procesor używa przetwarzania potokowego
 		\end{itemize}
-		Są cztery podstawowe zestawy instrukcji oraz piętnaście ich rozszerzeń. W tabeli \ref{Tab:ISA} przedstawiono ich podział.
-				Instrukcje są 32-bit. Tabela \ref{Tab:instruction} przedstawia formaty tych instrukcji. Korzystają one z sześciu formatów:
-		\begin{itemize}
-			\item Register (R) - instrukcje realizują działania na dwóch rejestrach {\it rs1} i {\it rs2}, wynik jest zapisywany w rejestrze {\it rd}.
-			\item Immediate (I) - instrukcje realizują działania rejestrze {\it rs1} i liczbie 12bitowej stałej ze znakiem, wynik jest zapisywany w rejestrze {\it rd}.
-			\item Upper immediate (U) - format wykorzystywany dla dwóch instrukcji: {\it LUI}, {\it AUIPC}. Służy do przypisywania liczb 20bitowych do rejestru {\it rd}.
-			\item Store (S) - instrukcje realizują zapis do pamięci, pobierany jest bazowy adres z rejestru {\it rs1} + offset pochodzący z {\it imm}, rejestr {\it rs2} przechowuje.
-			\item Branch (SB) - instrukcje realizują skoki warunkowe.
-			\item Jump (UJ) - instrukcje służące do skoków, dodają wartość {\it imm} do {\it PC}.
-		\end{itemize}
-		\begin{minipage}{\textwidth}
+		Są cztery podstawowe zestawy instrukcji oraz piętnaście ich rozszerzeń. W tabeli \ref{Tab:ISA} przedstawiono ich podział.\\
+				\begin{minipage}{\textwidth}
 		\begin{center}
-			\captionof{table}{ISA base and extensions\label{Tab:ISA}\cite{isa_book}}
+			\captionof{table}{Podstawowa specyfikacja ISA i jej rozszerzenia\label{Tab:ISA}\cite{isa_book}}
 						\scalebox{1}{\small
 			\begin{tabular}{|c|c|}
 				\hline
@@ -261,59 +255,16 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 				\end{tabular}}
 		\end{center}
 	\end{minipage}
-
-		\subsubsection{Rejestry}
-		\hspace{5mm}
-		RISC-V posiada 32 rejestry (tryb embeded posiada tylko 16). Jeśli korzystamy z rozszerzenia zawierającego liczby zmiennoprzecinkowe, dodane zostają kolejne 32 rejestry. Pierwszy rejestr nazywany jest rejestrem zerowym. Zawsze przyjmuje wartość zera, a wszystkie dane zapisywane do niego są tracone. Służy on jako rejestr pomocniczy w wielu instrukcjach.
-		\begin{center}
-			\captionof{table}{Rejestry RISC-V\label{Tab:registers}\cite{isa_book}}
-			\scalebox{0.8}{\small
-			\begin{tabular}{|c|c|c|c|}
-			\hline
-			Nazwa rejestry & Nazwa symboliczna& Opis & Właściciel \\
-			\hline
-			x0 & Zero & zawsze zero & \\
-			\hline
-			x1 & ra & adres powrotu &  wywołujący \\
-			\hline
-			x2 & sp & wskaźnik stosu & wołany (callee<?>) \\
-			\hline
-			x3 & gp & wskaźnik globalny & \\
-			\hline
-			x4 & tp & wskaźnik wątku & \\
-			\hline
-			x5 & t0 & \makecell{zmienna tymczasowa\\/ alternatywny adres powrotu} & wywołujący \\
-			\hline
-			x6-7 & t1-2& zmienne tymczasowe & wywołujący \\
-			\hline
-			x8 & s0/fp& zapisany rejestr / wskaźnik ramki & wołany \\
-			\hline
-			x9 & s1 & zapisany rejestr & wołany \\
-			\hline
-			x10-11 & a0-1 & argument funkcji / wartość zwracana & wywołujący \\
-			\hline 
-			x12-17 & a-2-7 & argument funkcji & wołany\\
-			\hline
-			x18-27 & s2-11 & zapisane rejestry & wołany \\
-			\hline
-			x28-31 & t3-6 & zmienne tymczasowe & wywołujący \\
-			\hline
-			\multicolumn{4}{|c|}{32 rejestry dla zmiennoprzecinkowego rozszerzenia} \\
-			\hline
-			f0-7 & ft0-7 & \makecell{tymczasowe zmienne \\ zmiennoprzecinkowe} & wywołujący \\
-			\hline
-			f8-9 & fs0-1 & \makecell{zapisane rejestry \\ zmiennoprzecinkowe} & wołany \\
-			\hline
-			f10-11 & fa0-1 & \makecell{argumenty/wartość zwaracana \\ zmiennoprzecinkowe} & wywołujący \\
-			\hline
-			f12-17 & fa2-7 & \makecell{argumenty \\ zmiennoprzecinkowe} & wywołujący \\
-			\hline
-			f18-27 & fs2-11 & \makecell{zapisane rejestry\\ zmiennoprzecinkowe} & wywołujący \\
-			\hline
-			f28-31 & fs8-11 & \makecell {tymczasowe zmienne \\zmiennoprzecinkowe} & wywołujący \\
-			\hline
-			\end{tabular}}
-		\end{center}
+				Instrukcje są 32-bitowe. Tabela \ref{Tab:instruction} przedstawia formaty tych instrukcji. Korzystają one z sześciu trybów adresowania:
+		\begin{itemize}
+			\item Register (R) - instrukcje realizują działania na dwóch rejestrach {\it rs1} i {\it rs2}, wynik jest zapisywany w rejestrze {\it rd}.
+			\item Immediate (I) - instrukcje realizują działania rejestrze {\it rs1} i liczbie 12-bitowej stałej ze znakiem, wynik jest zapisywany w rejestrze {\it rd}.
+			\item Upper immediate (U) - format wykorzystywany dla dwóch instrukcji: {\it LUI}, {\it AUIPC}. Służy do przypisywania liczb 20-bitowych do rejestru {\it rd}.
+			\item Store (S) - instrukcje realizują zapis do pamięci, pobierany jest bazowy adres z rejestru {\it rs1} + offset pochodzący z {\it imm}, rejestr {\it rs2} przechowuje.
+			\item Branch (SB) - instrukcje realizują skoki warunkowe.
+			\item Jump (UJ) - instrukcje służące do skoków, dodają wartość {\it imm} do {\it PC}.
+		\end{itemize}
+Każda instrukcja posiada kod operacji, jest to fragment rozkazu przekazywana do rdzenia. Informuje on jaka operacja powinna być wykonana. W instrukcjach architektury RISC-V liczba na zajmuje siedem najmniej ważnych bitów.
 		\begin{sidewaystable}
 					\captionof{table}{32-bit RISC-V formaty instrukcji\label{Tab:instruction}\cite{isa_book}}
 		\scalebox{0.9}{\small
@@ -341,9 +292,63 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 		
 		\newpage
 
+		\subsubsection{Rejestry}
+		\hspace{5mm}
+		RISC-V posiada 32 rejestry (tryb \textit{embeded} posiada tylko 16). Jeśli korzystamy z rozszerzenia zawierającego liczby zmiennoprzecinkowe, dodane zostają kolejne 32 rejestry. Pierwszy rejestr nazywany jest rejestrem zerowym. Zawsze przyjmuje wartość zera, a wszystkie dane zapisywane do niego są tracone. Służy on jako rejestr pomocniczy w wielu instrukcjach.
+		\begin{center}
+			\captionof{table}{Rejestry RISC-V\label{Tab:registers}\cite{isa_book}}
+			\scalebox{0.8}{\small
+			\begin{tabular}{|c|c|c|c|}
+			\hline
+			Nazwa rejestru & Nazwa symboliczna& Opis & Właściciel \\
+			\hline
+			x0 & Zero & zawsze zero & \\
+			\hline
+			x1 & ra & adres powrotu &  wywołujący \\
+			\hline
+			x2 & sp & wskaźnik stosu & wywołany \\
+			\hline
+			x3 & gp & wskaźnik globalny & \\
+			\hline
+			x4 & tp & wskaźnik wątku & \\
+			\hline
+			x5 & t0 & \makecell{zmienna tymczasowa\\/ alternatywny adres powrotu} & wywołujący \\
+			\hline
+			x6-7 & t1-2& zmienne tymczasowe & wywołujący \\
+			\hline
+			x8 & s0/fp& zapisany rejestr / wskaźnik ramki & wywołany \\
+			\hline
+			x9 & s1 & zapisany rejestr & wywołany \\
+			\hline
+			x10-11 & a0-1 & argument funkcji / wartość zwracana & wywołujący \\
+			\hline 
+			x12-17 & a-2-7 & argument funkcji & wywołany\\
+			\hline
+			x18-27 & s2-11 & zapisane rejestry & wywołany \\
+			\hline
+			x28-31 & t3-6 & zmienne tymczasowe & wywołujący \\
+			\hline
+			\multicolumn{4}{|c|}{32 rejestry dla zmiennoprzecinkowego rozszerzenia} \\
+			\hline
+			f0-7 & ft0-7 & \makecell{tymczasowe zmienne \\ zmiennoprzecinkowe} & wywołujący \\
+			\hline
+			f8-9 & fs0-1 & \makecell{zapisane rejestry \\ zmiennoprzecinkowe} & wywołany \\
+			\hline
+			f10-11 & fa0-1 & \makecell{argumenty/wartość zwaracana \\ zmiennoprzecinkowe} & wywołujący \\
+			\hline
+			f12-17 & fa2-7 & \makecell{argumenty \\ zmiennoprzecinkowe} & wywołujący \\
+			\hline
+			f18-27 & fs2-11 & \makecell{zapisane rejestry\\ zmiennoprzecinkowe} & wywołujący \\
+			\hline
+			f28-31 & fs8-11 & \makecell {tymczasowe zmienne \\zmiennoprzecinkowe} & wywołujący \\
+			\hline
+			\end{tabular}}
+		\end{center}
+
+
 		\subsubsection{Dostęp do pamięci}
 		\hspace{5mm}
-			Dostęp do pamięci odbywa się za pomocą instrukcji {\it load/store}. W instrukcjach {\it load} adres bazowy znajduje się w rejestrze {\it rs1}, offset jest pobierany z liczby całkowitej 12bitowej {\it imm}. Rejestr docelowy znajduje się w {\it rd}. Przykład działania instrukcji {\it LW}:
+			Dostęp do pamięci odbywa się za pomocą instrukcji {\it load/store}. W instrukcjach {\it load} adres bazowy znajduje się w rejestrze {\it rs1}, offset jest pobierany z liczby całkowitej 12-bitowej {\it imm}. Rejestr docelowy znajduje się w {\it rd}. Przykład działania instrukcji {\it LW}:
 			\begin{flushleft}			
 			{\fontfamily{qcr}\selectfont
 			lw x16, 8(x2)\\
@@ -361,7 +366,7 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 			\end{flushleft}
 			Wartość w {\it funct3} służy do dekodowania rozmiaru i znaku ładowanej wartości. Wartość ta jest zależna od użytego rozkazu, tabela \ref{Tab:load_instr} przedstawia zależność między instrukcją a wartością {\it func3}. 
 			\begin{center}
-			\captionof{table}{Zależność między {\it func3} a instrukcją load\label{Tab:load_instr}\cite{isa_book}}\small
+			\captionof{table}{Zależność między {\it func3} a instrukcją \textit{load}\label{Tab:load_instr}\cite{isa_book}}\small
 				\begin{tabular}{|c|c|}
 					\hline
 					func3 & instrukcja \\
@@ -382,7 +387,7 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 		\begin{flushleft}			
 			{\fontfamily{qcr}\selectfont
 			sw x16, 8(x2)\\
-			\begin{tabular}{*{6}{|c}|}
+			\small\begin{tabular}{*{6}{|c}|}
 				\hline
 				imm[11:5] & rs2 & rs1& func3 & imm[4:0] & opcode\\
 				\hline
@@ -394,9 +399,9 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 			\end{tabular}
 			}
 			\end{flushleft}
-			Podobnie jak w instrukcjach {\it load} func3 służy dekodowania rozmiaru i jest zależna od przekazanego rozkazu. Tabela \ref{Tab:store_instr} przedstawia tą zależność.
+			Podobnie jak w instrukcjach {\it load} \textit{func3} służy dekodowania rozmiaru i jest zależna od przekazanego rozkazu. Tabela \ref{Tab:store_instr} przedstawia tą zależność.
 			\begin{center}
-			\captionof{table}{Zależność między {\it func3} a instrukcją store\label{Tab:store_instr}\cite{isa_book}}\small
+			\captionof{table}{Zależność między {\it func3} a instrukcją \textit{store}\label{Tab:store_instr}\cite{isa_book}}\small
 				\begin{tabular}{|c|c|}
 					\hline
 					func3 & instrukcja \\
@@ -411,7 +416,7 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 		\end{center}
 		\subsubsection{Instrukcje arytmetyczne i logiczne}
 		\hspace{5mm}
-			RISC-V zawiera zestaw instrukcji matematycznych przeznaczony dla liczb całkowitych w którego skład wchodzą: dodawanie, odejmowanie, przesuwanie , operacje logiczne i porównywanie liczb. Instrukcje dla mnożenia i dzielenia liczb znajdują się w rozszerzeniu ISA {\it M}. Zaś rozszerzenie ISA {\it F} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych pojedynczej precyzji, rozszerzenie {\it D} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych podwójnej precyzji\cite{isa_book}. Instrukcje te wykorzystują format {\it R} i {\it I}. Przykład działania rozkazu {\it add}, wykorzystuje on format instrukcji {\it R}:
+			RISC-V zawiera zestaw instrukcji matematycznych przeznaczony dla liczb całkowitych, w którego skład wchodzą: dodawanie, odejmowanie, przesuwanie, operacje logiczne i porównywanie liczb. Instrukcje dla mnożenia i dzielenia liczb znajdują się w rozszerzeniu ISA {\it M}. Rozszerzenie ISA {\it F} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych pojedynczej precyzji, rozszerzenie {\it D} zawiera instrukcje matematyczne dla liczb zmiennoprzecinkowych podwójnej precyzji\cite{isa_book}. Instrukcje te wykorzystują format {\it R} i {\it I}. Na przykład działanie rozkazu {\it add} wykorzystuje format instrukcji {\it R}:
 			\begin{flushleft}			
 			{\fontfamily{qcr}\selectfont
 			add x6, x7, x8\\
@@ -424,7 +429,7 @@ Przykładem mikroprocesora wykorzystującego ISA RISC-V jest Ibex. Jest on tworz
 			\end{tabular}
 			}
 			\end{flushleft}
-Pierwszy argument trafił to rejestru {\it rd}, kolejny do rejestru {\it rs1} ostatni do rejestru {\it rs2}. {\it Funct7} i {\it funct3} służą do rozpoznania operacji i są one zależne od przekazanej instrukcji. Tabela \ref{Tab:add_instr} przedstawia te zależności.
+Pierwszy argument jest zalokowany w rejestrze {\it rd}, kolejny {\it rs1} ostatni w {\it rs2}. Pola {\it Funct7} i {\it funct3} służą do rozpoznania operacji i są one zależne od przekazanej instrukcji. Tabela \ref{Tab:add_instr} przedstawia te zależności.
 			\begin{center}
 			\captionof{table}{Zależność między {\it func7} i {\it func3} a instrukcjami arytmetycznymi\label{Tab:add_instr}\cite{isa_book}}\small
 				\begin{tabular}{|c|c|c|c|}
@@ -453,7 +458,10 @@ Pierwszy argument trafił to rejestru {\it rd}, kolejny do rejestru {\it rs1} os
 					\hline
 				\end{tabular}
 		\end{center}
-		Instrukcja {\it addi} wykorzystuje format {\it I}, więc trzeci argument rozkazu jest liczbą całkowitą. Przykład tej instrukcji: 
+\begin{minipage}{\textwidth}
+
+
+Instrukcja {\it addi} wykorzystuje format {\it I}, więc trzeci argument rozkazu jest liczbą całkowitą. Przykład tej instrukcji ma następujący format: 
 			\begin{flushleft}			
 			{\fontfamily{qcr}\selectfont
 			addi x6, x0, 50\\
@@ -466,10 +474,11 @@ Pierwszy argument trafił to rejestru {\it rd}, kolejny do rejestru {\it rs1} os
 			\end{tabular}
 			}
 			\end{flushleft}
-			{\it Func3} jest wykorzystywana w celu dekodowania instrukcji. Rozkazu przesunięcia bitowego wykorzystują pięć najmłodszych bitów z {\it imm}. Siedem pozostałych bitów służy do rozpoznawania instrukcji.
+\end{minipage}
+			Pole {\it func3} jest wykorzystywane w celu dekodowania instrukcji. Rozkazy przesunięcia bitowego wykorzystują pięć najmniej znaczących bitów z {\it imm}. Siedem pozostałych bitów służy do rozpoznawania instrukcji.
 		\subsubsection{Instrukcje skokowe}
 		\hspace{5mm}
-			Instrukcje skokowe dzielą się na dwa rodzaje: skoki bezwarunkowe i skoki warunkowe. Pierwszą z nich reprezentują dwa rozkazy: \textit{JAL} (format \textit{UJ} i \textit{JALR} (format \textit{I}. Pierwszy z nich pozwala dodać do rejestru PC liczbę ze znakiem o szerokości 20bitów. Dzięki rozkazowi \textit{JALR} i \textit{AUIPC} można stworzyć skok o szerokości 32bitów. Rozkaz \textit{AUIPC} zapisuje do rejestru aktualną wartość PC, a rozkaz \textit{JALR}, zamienia dwanaście najmłodszych bitów na wartość przekazanego argumentu. Przykładowe programy z użyciem instrukcji skoków bezwarunkowych.
+			Instrukcje skokowe dzielą się na dwa rodzaje: skoki bezwarunkowe i skoki warunkowe. Pierwszą z nich reprezentują dwa rozkazy: \textit{JAL} (format \textit{UJ}) i \textit{JALR} (format \textit{I}). Pierwszy z nich pozwala dodać do rejestru \textit{PC} liczbę ze znakiem o szerokości 20-bitów. Dzięki rozkazowi \textit{JALR} i \textit{AUIPC} można stworzyć skok o szerokości 32-bitów. Rozkaz \textit{AUIPC} zapisuje do rejestru aktualną wartość \textit{PC}, a rozkaz \textit{JALR}, zamienia dwanaście najmniej znaczących bitów na wartość przekazanego argumentu. Przykładowe programy z użyciem instrukcji skoków bezwarunkowych są następujące:
 				\begin{lstlisting}[language=Ant]
 addi x31, x0 ,0
 auipc x2, 0
@@ -477,120 +486,128 @@ addi x31, x31, 1
 addi x31, x31, 2
 jalr x1, x2, 8
 			\end{lstlisting}
-			Program wpisuje do rejestru \textit{x2} aktualną wartość PC, następnie po wykonaniu dwóch instrukcji \textit{addi} następuje rozkaz\textit{jalr}, który dodaje wartość 8 do zapisanej wartości PC, więc kolejnym rozkazem wykonanym będzie \textit{addi x31, x31, 2}.
+			Program wpisuje do rejestru \textit{x2} aktualną wartość \textit{PC}, następnie po wykonaniu dwóch instrukcji \textit{addi} następuje rozkaz \textit{jalr}, który dodaje wartość 8 do zapisanej wartości \textit{PC}, więc kolejnym rozkazem wykonanym będzie \textit{addi x31, x31, 2}.
 			\\
-			Kolejną rodzajem są skoki warunkowe, jest ich sześć i są zakodowane w formacie \textit{SB}:
+			Kolejnym rodzajem są skoki warunkowe, jest ich sześć i są zakodowane w formacie \textit{SB}:
 			\begin{itemize}
-				\item BEQ - gdy zapisane liczby w rejestrach są równe wykonuje skok
-				\item BNE - gdy zapisane liczby w rejestrach są różne wykonuje skok
-				\item BLT - gdy liczba z rejestru \textit{rs1} jest większa wykonuje skok
-				\item BLTU - gdy liczba z rejestru \textit{rs1} jest większa bądź równa wykonuje skok
-				\item BHE - gdy liczba z rejestru \textit{rs2} jest większa wykonuje skok
-				\item BGEU - gdy liczba z rejestru \textit{rs2} jest większa wykonuje skok
+				\item BEQ - gdy zapisane liczby w rejestrach są równe to wykonuje skok,
+				\item BNE - gdy zapisane liczby w rejestrach są różne to wykonuje skok,
+				\item BLT - gdy liczba z rejestru \textit{rs1} jest większa to wykonuje skok,
+				\item BLTU - gdy liczba z rejestru \textit{rs1} jest większa bądź równa to wykonuje skok,
+				\item BHE - gdy liczba z rejestru \textit{rs2} jest większa to wykonuje skok,
+				\item BGEU - gdy liczba z rejestru \textit{rs2} jest większa to wykonuje skok,
 			\end{itemize}
-	\subsection{System on Chip}
-
+	\subsection{System na Chipie}
+		\subsubsection{Architektura systemu}
+		W celu realizacji projektu wybrano architekturę Harvardzką. Schemat blokowy przedstawiono na rysunku \ref{Fig:soc_arch}.
+		\begin{center}
+		\includegraphics[width=10cm]{./rysunki/soc.png}
+		\end{center}
+		\captionof{figure}{Schemat blokowy projektowanego systemu na chipie\label{Fig:soc_arch}}
 		\subsubsection{Architektura Harvardzka}
 		\hspace{5mm}
-			Architektura Harvardzka to rodzaj architektury komputera. Posiada ona dwie oddzielne szyny dla danych i rozkazów. Można w tym samym czasie pobierać argument wykonywanej funkcji i pobierać następnego rozkazu. Zwiększa ta szybkość pracy. Rysunek \ref{Fig:harvard} przedstawia schemat blokowy tej architektury.\\
+			Architektura Harvardzka to rodzaj architektury komputera, która została wybrana w celu realizacji systemu. Posiada ona dwie oddzielne magistrale dla danych i rozkazów. Można w tym samym czasie pobierać argument wykonywanej funkcji i pobierać następny rozkaz. Zwiększa ta szybkość pracy. Rysunek \ref{Fig:harvard} przedstawia schemat blokowy tej architektury.\\
 \begin{samepage}
-			\captionof{figure}{Schemat blokowy architektury Harvardzkiej\label{Fig:harvard}}
+			
 \nopagebreak
 \begin{center}
 		\includegraphics[width=10cm]{./rysunki/Harvard_architecture.png}
 		\end{center}
+		\captionof{figure}{Schemat blokowy architektury Harvardzkiej\label{Fig:harvard}}
 \end{samepage}
 		\subsubsection{Peryferia}
 		\hspace{5mm}
-			W projekcie zostały dodane następujące peryferia:
+			W projekcie została dodana pamięć RAM i następujące peryferia:
 			\begin{enumerate}
-			\item RAM - pamięć o dostępnie swobodnym, jest to podstawowy rodzaj pamięci cyfrowej. Może być ona odczytywana i zmieniana w dowolnej kolejności. Służy ona do przechowywania danych i kodu maszynowego. W projekcie zaimplementowano pamięć jedno-portową i dwu-portową. Pamięć jedno-portowa posiada tylko jeden dane/adres port, więc może być czytana lub zapisywana w jednej chwili czasu. Pamięć dwu-portowa zawiera dwa dane/adres porty, więc może być czytana i zapisywana w jednej chwili czasu.\cite{ram_book}
+			\item RAM - pamięć o dostępnie swobodnym, jest to podstawowy rodzaj pamięci cyfrowej. Może być ona odczytywana i zmieniana w dowolnej kolejności. Służy ona do przechowywania danych i kodu maszynowego. W projekcie zaimplementowano pamięć jedno-portową i dwu-portową. Pamięć jedno-portowa posiada tylko jedną parę sterujących portów, więc może być czytana lub zapisywana w jednej chwili czasu. Pamięć dwu-portowa zawiera dwie pary portów sterujących, więc może być czytana i zapisywana w jednej chwili czasu.\cite{ram_book}
 			\item SPI - interfejs służący do transmisji, głównie używany w systemach wbudowanych. Wykorzystuje się tryb \textit{master-slave}, dzięki temu jest zapewniona komunikacja full-duplex. Interfejs ten posiada następujące porty:
 			\begin{itemize}
-			\item $SCLK$ - zegar, wyjście z mastera.
-			\item $MOSI$ - \textit{Master Out Slave In}
-			\item $MISO$ - \textit{Master In Slave Out}
+			\item $SCLK$ - zegar, wyjście z mastera,
+			\item $MOSI$ - \textit{Master Out Slave In},
+			\item $MISO$ - \textit{Master In Slave Out},
 			\item $\overline{SS}$ - \textit{Slave Select}
 			\end{itemize}
-			 By rozpocząć transmisje, \textit{Master} konfiguruje \textit{SCLK}, następnie ustawia stan niski na \textit{SS} w celu wybrania odpowiedniego \textit{Slave'a}. \textit{Master} wysyła bit poprzez \textit{MOSI} i \textit{slave'a} odczytuje go i wysyła bit poprzez \textit{MISO}. Rysunek \ref{Fig:spi} obrazuję przebieg transmisji\cite{spi_book}.\\
+			 By rozpocząć transmisje, \textit{Master} konfiguruje \textit{SCLK}, następnie ustawia stan niski na linii \textit{SS} w celu wybrania odpowiedniego \textit{Slave'a}. \textit{Master} wysyła bit poprzez \textit{MOSI} i \textit{slave'a} odczytuje go i wysyła bit poprzez \textit{MISO}. Rysunek \ref{Fig:spi} obrazuję przebieg transmisji\cite{spi_book}.\\
 			\begin{minipage}{\textwidth}
-				\captionof{figure}{Przykład transmisji SPI\label{Fig:spi}}
+
 				\begin{center}
 					\includegraphics[width=13cm]{./rysunki/spi.png}
 				\end{center}
+								\captionof{figure}{Przykład transmisji SPI\label{Fig:spi}\citep{spi_rys}}
 			\end{minipage}
 			
 			\item I2C - magistrala szeregowa, dwukierunkowa, synchroniczna służąca do komunikacji. Wykorzystuje tryb \textit{master-slave}. Posiada dwa porty:
 			\begin{itemize}
-				\item SDA - Linia dla \textit{mastera} i \textit{slave'a} służąca do komunikacji między nimi
-				\item SCL - linia przenosząca sygnał zegarowy
+				\item SDA - Linia dla \textit{mastera} i \textit{slave'a} służąca do komunikacji między nimi,
+				\item SCL - linia przenosząca sygnał zegarowy.
 			\end{itemize}
-			I2C może pracować z wieloma \textit{slave'ami} i \textit{masterami}. Rysunek \ref{Fig:i2c_frame} przedstawia wygląd ramki I2C. By rozpoacząć transmisje \textit{master} wysyła sygnał startowy. By to uzyskać sygnał na linii \textit{SDA} zmienia się z wysokiego na niski przed zmianą sygnały z wysokiego na niski na linii \textit{SCL}. Następnie jest przesyłany adres \textit{slave'a}. \textit{Slave} porównuje nadesłany adres i odsyła bit \textit{ACK} ustawiając na linii \textit{SDA} bit na stan niski. Po każdej udanej transmiji \textit{slave} przysyła \textit{masterowi} bit \textit{ACK}. W celu zakończenia transmisji należy w czasie wysokiego stanu \textit{SCL} zmienić stan z niskiego na wysoki na linii \textit{SDA}. Rysunek \ref{Fig:i2c_trans} przedstawia przykładowy przebieg transmisji.\cite{i2c_book}
+			I2C może pracować z wieloma \textit{slave'ami} i \textit{masterami}.  By rozpocząć transmisję,\textit{master} wysyła sygnał startowy. By to uzyskać sygnał na linii \textit{SDA} zmienia się z wysokiego na niski przed zmianą sygnały z wysokiego na niski na linii \textit{SCL}. Następnie jest przesyłany adres \textit{slave'a}. \textit{Slave} porównuje nadesłany adres i odsyła bit \textit{ACK} ustawiając na linii \textit{SDA} bit na stan niski. Po każdej udanej transmiji \textit{slave} przysyła \textit{masterowi} bit \textit{ACK}. W celu zakończenia transmisji należy w czasie wysokiego stanu \textit{SCL} zmienić stan z niskiego na wysoki na linii \textit{SDA}\cite{i2c_book}.
 
 
-			\item UART - urządzenie służące do asynchronicznej szeregowej komunikacji. Odbiera jak i wysyła informacje poprzez port szeregowy. Zawiera on on konwertery:
+			\item UART - urządzenie służące do asynchronicznej szeregowej komunikacji. Odbiera, jak i wysyła informacje poprzez port szeregowy. Zawiera on on konwertery:
 			\begin{itemize}
-				\item szeregowo-równoległy - do konwersji danych wysyłanych do komputera
-				\item równoległy-szeregowy - do konwersji danych pochodzących z komputera
+				\item szeregowo-równoległy - do konwersji danych wysyłanych do komputera,
+				\item równoległy-szeregowy - do konwersji danych pochodzących z komputera.
 			\end{itemize}	
-			Rysunek \ref{Fig:uart_frame} przedstawia ramkę UARTu. Bit parzystości jest opcjonalny i służy jako bit kontrolny.\cite{uart_book}
-			\begin{samepage}
-				\captionof{figure}{Ramka UART\label{Fig:uart_frame}}
-				\nopagebreak
+			Rysunek \ref{Fig:uart_frame} przedstawia ramkę UARTu. Bit parzystości jest opcjonalny i służy jako bit kontrolny\cite{uart_book}.\\
+\begin{minipage}{\textwidth}
 				\begin{center}
-					\includegraphics[width=13cm]{./rysunki/uart_frame.png}
+					\includegraphics[width=12cm]{./rysunki/uart_frame.png}
 				\end{center}
-			\end{samepage}
-			\item GPIO - wyprowadzenia służące do komunikacja między mikroprocesorem a peryferiami \cite{gpio_doc}
-			\item Timer
+								\captionof{figure}{Ramka UART\label{Fig:uart_frame}\cite{uart_rys}}
+			\end{minipage}
+			\item GPIO - wyprowadzenia służące do komunikacja między mikroprocesorem a peryferiami \cite{gpio_doc}.
+			\item Timer.
 			\end{enumerate}
 
 		\subsubsection{Wishbone}
 		\hspace{5mm}
-			Wishobone to opensource magistrala służąca do łączenia ze sobą wielu IP w systemie \textit{master/slave}. Rysunek \ref{Fig:wishbone} przedstawia połączenia w tym interfejsie.\\
+			Wishobone to darmowa magistrala służąca do łączenia ze sobą wielu modułów w systemie \textit{master/slave}. Rysunek \ref{Fig:wishbone} przedstawia połączenia w tym interfejsie.\\
 			\begin{minipage}{\textwidth}
-				\captionof{figure}{Wishbone master/slave interfejs\cite{wishbone_b4}\label{Fig:wishbone}}
+
 				\nopagebreak
 				\begin{center}
 					\includegraphics[width=10cm]{./rysunki/wishbone.png}
 				\end{center}
+								\captionof{figure}{Interfejs Wishbone master/slave\cite{wishbone_b4}\label{Fig:wishbone}}
 			\end{minipage}
 			Podczas implementacji tej magistrali należy trzymać się zasad które definiuje standard:
 			\begin{itemize}
-				\item Wszystkie sygnały interfejsu muszą być aktywne w wysokim stanie
-				\item Wszystkie interfejsy \textit{WISHOBONE} muszą zainicjować siebie podczas asercji sygnału \textit{RST\_I}. Muszą zostać zainicjowane aż do narastającego zbocza \textit{CLK\_I}, której następuje po negacji \textit{RST\_I}.
-				\item \textit{RST\_I} musi pozostać przynajmniej przez jeden pełny cykl zegarowy w stanie asercji.
-				\item Wszystkie interfejsy \textit{WISHBONE} muszą być przygotowane na reakcję na \textit{RST\_I} w każdym momencie.
-				\item \textit{RST\_I} może pozostać w stanie asercji dłużej niż jeden cykl zegarowy.
+				\item wszystkie sygnały interfejsu muszą być aktywne w wysokim stanie,
+				\item wszystkie interfejsy \textit{WISHOBONE} muszą zainicjować siebie podczas stanu wysokiego sygnału \textit{RST\_I}. Muszą zostać zainicjowane aż do narastającego zbocza \textit{CLK\_I}, której następuje po negacji \textit{RST\_I},
+				\item \textit{RST\_I} musi pozostać przynajmniej przez jeden pełny cykl zegarowy w stanie wysokim,
+				\item wszystkie interfejsy \textit{WISHBONE} muszą być przygotowane na reakcję na \textit{RST\_I} w każdym momencie,
+				\item \textit{RST\_I} może pozostać w stanie wysokim dłużej niż jeden cykl zegarowy.
 			\end{itemize}
-			Porty używane przez ten interfejs\cite{wishbone_tutorial}:
+			Porty używane przez ten interfejs obejmują\cite{wishbone_tutorial}:
 			\begin{itemize}
-				\item \textit{RST\_I} - sygnał resetu otrzymywany z \textit{SYSCON}
-				\item \textit{CLK\_I} - sygnał zegarowy otrzymywany z \textit{SYSCON}
-				\item \textit{ADR\_O/I} - linia adresu, wyjście z \textit{mastera}, wejście do \textit{slave'a}
-				\item \textit{DAT\_I/O} - linia danych 
-				\item \textit{WE\_O/I} - pozwolenie na zapis, wyjście z \textit{master}, wejście do \textit{slave}.
-				\item \textit{SEL\_O/I} - selekcja bajtu, wyjście z \textit{master}, wejście do \textit{slave}.
-				\item \textit{STB\_O/I} - potwierdzenie nadania danych przez \textit{mastera}, wyjście z \textit{master}, wejście do \textit{slave}.
-				\item \textit{ACK\_I/O} - potwierdzenie przyjęcia danych przez \textit{slave'a}, wyjście z \textit{slave}, wejście do \textit{master}.
+				\item \textit{RST\_I} - sygnał resetu otrzymywany z \textit{SYSCON},
+				\item \textit{CLK\_I} - sygnał zegarowy otrzymywany z \textit{SYSCON},
+				\item \textit{ADR\_O/I} - linia adresu, wyjście z \textit{mastera}, wejście do \textit{slave'a},
+				\item \textit{DAT\_I/O} - linia danych,
+				\item \textit{WE\_O/I} - pozwolenie na zapis, wyjście z \textit{master}, wejście do \textit{slave},
+				\item \textit{SEL\_O/I} - selekcja bajtu, wyjście z \textit{master}, wejście do \textit{slave},
+				\item \textit{STB\_O/I} - potwierdzenie nadania danych przez \textit{mastera}, wyjście z \textit{master}, wejście do \textit{slave},
+				\item \textit{ACK\_I/O} - potwierdzenie przyjęcia danych przez \textit{slave'a}, wyjście z \textit{slave}, wejście do \textit{master},
 				\item \textit{CYC\_O/I} - cykl magistrali, wyjście z \textit{master}, wejście do \textit{slave}.
 			\end{itemize}
 			
 		Są dostępne trzy topologie:
 			\begin{enumerate}
-				\item Data Flow Interconnection
-				\item Crossbar Switch Interconnection
-				\item Shared Bus Interconnection
+				\item Data Flow Interconnection.
+				\item Crossbar Switch Interconnection.
+				\item Shared Bus Interconnection.
 			\end{enumerate}
-			Ostatnia topologia została użyta w projekcie. Ma ona miejsce gdy wiele peryferii typu \textit{slave} jest podpięta do tych samych \textit{masterów}. Rysunek \ref{Fig:wishbone_sharedbus} przedstawia przykład tej topologii.
+			Ostatnia topologia została użyta w projekcie. Ma ona miejsce gdy wiele peryferii typu \textit{slave} jest dołączonych do tych samych \textit{masterów}. Rysunek \ref{Fig:wishbone_sharedbus} przedstawia przykład tej topologii.
 			\begin{samepage}
-				\captionof{figure}{Wishbone shared bus interconnection\cite{wishbone_b4}\label{Fig:wishbone_sharedbus}}
+
 				\nopagebreak
 				\begin{center}
 					\includegraphics[width=10cm]{./rysunki/wishbone_sharedbus.png}
 				\end{center}
+								\captionof{figure}{Wishbone wspólne połączenie magistrali\cite{wishbone_b4}\label{Fig:wishbone_sharedbus}}
 			\end{samepage}
-		W celu rozpoznania odpowiedniego \textit{slave'a} przypisuje im się adresy. Adresy te tworzą mapę, szczegółowy opis tejże mapy znajduje się w rozdziale 3.2.
+		W celu rozpoznania odpowiedniego \textit{slave'a} przypisuje im się adresy. Adresy te tworzą mapę. Opis tejże mapy znajduje się w rozdziale 3.2.
 	\subsection{Ibex}
 	\hspace{5mm}
 		Ibex jest to mikroprocesor tworzony przez organizację \textit{LowRISC}. Jest on dwupotokowy:
@@ -598,19 +615,20 @@ jalr x1, x2, 8
 	\item Pobieranie instrukcji - pobiera instrukcje z pamięci.
 	\item Dekodowanie i wykonanie instrukcji - zdekodowanie pobranej instrukcji i natychmiastowe jej wykonanie
 \end{enumerate}		
-		 Implementuje on \textit{ISA RV32IMC}. Wspiera on również rozszerzenie \textit{E} i eksperymentalne \textit{B}. Można je włączyć poprzez prawidłowe ustawienie parametrów\cite{ibex_doc}. Mikroprocesor ma szeroko rozwiniętą weryfikacje, wykorzystuje on między innymi generator rozkazów \textit{RISCV-DV}. Jest on również częścią projektu \textit{OpenTitan}, jest to \textit{RoT}, wspierany między innymi przez \textit{Google}\cite{google_opentitan}.
+		 Implementuje on \textit{ISA RV32IMC}. Wspiera on również rozszerzenie \textit{E} i eksperymentalne \textit{B}. Można je włączyć poprzez prawidłowe ustawienie parametrów\cite{ibex_doc}. Dla rdzenia została stworzona obszerna weryfikacja, wykorzystuje ona między innymi generator rozkazów \textit{RISCV-DV}. Jest on również częścią projektu \textit{OpenTitan}, jest to \textit{RoT}, wspierany między innymi przez \textit{Google}\cite{google_opentitan}.
 		Rysunek \ref{Fig:ibex_block} przedstawia schemat blokowy mikroprocesora \textit{Ibex}\cite{ibex_doc}.\\
 			\begin{minipage}{\textwidth}
-				\captionof{figure}{Schemat blokowy mikroprocesora\label{Fig:ibex_block}}
+
 				\nopagebreak
 				\begin{center}
 					\includegraphics[width=14cm]{./rysunki/blockdiagram.png}
 				\end{center}
+								\captionof{figure}{Schemat blokowy mikroprocesora\label{Fig:ibex_block}\cite{ibex_doc}}
 			\end{minipage}
 	\subsection{Kompilator}
-		\subsubsection{Budowanie toolchaina}
+		\subsubsection{Budowanie kompilatora skrośnego}
 		\hspace{5mm}
-			Toolchain można pobrać z oficjalnego repozytorium \textit{RISC-V}\cite{toolchain}. By zbudować kompatibilną wersję kompilatora dla mikroprocesora \textit{Ibex}, należy do konfiguracji podać argumenty \textit{--with-abi=ilp32 --with-arch=rv32imc --with-cmodel=medany} lub skorzystać z \textit{--multilib}. Opcja ta spowoduje zbudowanie kompilatora dla 64bit, lecz po podaniu odpowiednich argumentów podczas kompilacji programu wspiera również architektury 32bit.
+			Kompilator skrośny można pobrać z oficjalnego repozytorium \textit{RISC-V}\cite{toolchain}. By zbudować kompatibilną wersję kompilatora dla mikroprocesora \textit{Ibex}, należy do konfiguracji podać argumenty \textit{--with-abi=ilp32 --with-arch=rv32imc --with-cmodel=medany} lub skorzystać z \textit{--multilib}. Opcja ta spowoduje zbudowanie kompilatora dla 64-bit, lecz po podaniu odpowiednich argumentów podczas kompilacji programu wspiera również architektury 32-bit.
 		\subsubsection{Przykładowa kompilacja}
 		\hspace{5mm}
 			By skompilować przykładowy program dla mikroprocesora 
@@ -643,65 +661,58 @@ Pierwsze dwie komendy tworzą biblioteki, trzecia komenda spaja ze sobą potrzeb
 		\hspace{5mm}
 			UVM jest to biblioteka oparta na języku \textit{SystemVerilog} służąca do tworzenia testów weryfikacyjnych. UVM zawiera bazowe klasy z metodami, które pomagają w weryfikacji. Ważniejsze klasy bazowe biblioteki:
 			\begin{enumerate}
-				\item uvm\_object - podstawowa klasa bazowa, zawierająca metody: \textit{create, copy, clone, compare, print, record}. Zazwyczaj używana do budowy testbenchu i konfiguracji testcase'u
-				\item uvm\_component - wszystkie komponenty testbenchu takie jak \textit{scoreboards, monitor, driver} pochodzą z tej klasy.
-				\item uvm\_sequence - jest klasą bazową wszystkich sekwencji zawartych w testbenchu
+				\item uvm\_object - podstawowa klasa bazowa, zawierająca metody: \textit{create, copy, clone, compare, print, record}. Zazwyczaj używana do budowy architektury testu,
+				\item uvm\_component - wszystkie komponenty architektury testu takie jak \textit{scoreboards, monitor, driver} pochodzą z tej klasy.
+				\item uvm\_sequence - jest klasą bazową wszystkich sekwencji zawartych w teście.
 			\end{enumerate}
 UVM test składa się z następujących elementów:
 \begin{itemize}
-	\item UVM test - jest odpowiedzialny za konfigurację testbenchu, rozpoczęcie symulacji poprzez inicjalizację sekwencji, stworzenie wszystkich komponentów, której znajdują się poniżej w hierarchii na przykład: uvm\_env.
-	\item UVM env - grupuje agentów i scoreborady
-	\item UVM Agent - łączy ze sobą \textit{uvm\_components} na przykład:\textit{uvm\_driver, uvm\_monitor, uvm\_suquence, uvm\_sequencer} za pomocą interfejsów TLM.
-	\item UVM Driver - jest odpowiedzialny za wysyłanie pakietów do DUT
-	\item UVM Sequence - generuje pa kiety
-	\item UVM Sequencer - jest odpowiedzialny za ruch między \textit{uvm\_sequence} i \textit{uvm\_driver}
-	\item UVM Monitor - obserwuje sygnały, następnie wysyła je do \textit{uvm\_scoreboard}
+	\item UVM test - jest odpowiedzialny za konfigurację testu, rozpoczęcie symulacji poprzez inicjalizację sekwencji, stworzenie wszystkich komponentów, której znajdują się poniżej w hierarchii na przykład: \textit{uvm\_env},
+	\item UVM env - grupuje \textit{uvm\_agent} i \textit{uvm\_scoreboard}
+	\item UVM Agent - łączy ze sobą \textit{uvm\_components} na przykład:\textit{uvm\_driver, uvm\_monitor, uvm\_suquence, uvm\_sequencer} za pomocą interfejsów TLM,
+	\item UVM Driver - jest odpowiedzialny za wysyłanie pakietów do DUT,
+	\item UVM Sequence - generuje pakiety,
+	\item UVM Sequencer - jest odpowiedzialny za ruch między \textit{uvm\_sequence} i \textit{uvm\_driver},
+	\item UVM Monitor - obserwuje sygnały, następnie wysyła je do \textit{uvm\_scoreboard},
 	\item UVM Scoreboard - odbiera dane z \textit{uvm\_monitor} i porównuje z spodziewanymi wartościami. Wartości te mogą pochodzić z modelu referencyjnego lub \textit{golden pattern}.
 \end{itemize}
-		Rysunek \ref{Fig:uvm_block} przedstawia przykładowy graf UVM testu
-			\begin{samepage}
-				\captionof{figure}{Przykładowy graf UVM\label{Fig:uvm_block}}
+		Rysunek \ref{Fig:uvm_block} przedstawia przykładowy graf UVM testu.\\
+			\begin{minipage}{\textwidth}
 				\nopagebreak
 				\begin{center}
 					\includegraphics[width=14cm]{./rysunki/uvm_graph.jpg}
 				\end{center}
-			\end{samepage}
+						\captionof{figure}{Przykładowy graf UVM\label{Fig:uvm_block}}
+			\end{minipage}
 		\subsubsection{RISCV DV}
 		\hspace{5mm}
-			RISCV-DV - narzędzie/IP służące do generacji programów w języku assembler do testowania danych aspektów procesora. Współpracuje z ISA: \textit{RV32IMAFDC, RV64IMAFDC}. Programy są tworzone losowo. By korzystać z tego nardzędzia/IP należy posiadać symulator wspierający UVM, na przykład: Riviera-PRO \cite{google_dv}.
+			RISCV-DV to narzędzie służące do generacji programów w języku assembler do testowania danych aspektów procesora. Współpracuje z ISA: \textit{RV32IMAFDC, RV64IMAFDC}. Programy są tworzone losowo. By korzystać z tego nardzędzia należy posiadać symulator wspierający UVM, na przykład: Riviera-PRO \cite{google_dv}.
 
 	\subsection{FPGA}
 	\hspace{5mm}
-		SoC będzie działać na płytce NEXYS4 DDR wyposażony w programowalny układ logiczny Artix-7 XC7A100T-1CSG324C. Ważniejsze zasoby płytki:\cite{nexys}
+		SoC jest implementowany na płytce NEXYS4 DDR wyposażony w programowalny układ logiczny Artix-7 XC7A100T-1CSG324C. Ważniejsze zasoby płytki:\cite{nexys}
 		\begin{itemize}
-			\item 15850 plastrów logicznych, każdy złożony z czterech elementów LUT o 6-wejściach i 8 przerzutników
-			\item Pojemność 4860 kb szybkiego bloku pamięci RAM
-			\item Sześć bloków zarządzania sygnałem zegarowym (CMT), każdy z pętlą fazową (PLL)
-			\item 240 plastrów DSP
-			\item 16 przełączników użytkownika
-			\item Mostek USB-UART
-			\item Port USB-JTAG Digilent do komunikacji i programowania FPGA
-			\item Cztery porty Pmod
-			\item 100MHz rezonator kwarcowy
+			\item 15850 plastrów logicznych, każdy złożony z czterech elementów LUT o 6-wejściach i 8 przerzutników,
+			\item Pojemność 4860 kb szybkiego bloku pamięci RAM,
+			\item Sześć bloków zarządzania sygnałem zegarowym (CMT), każdy z pętlą fazową (PLL),
+			\item 240 plastrów DSP,
+			\item 16 przełączników użytkownika,
+			\item Mostek USB-UART,
+			\item Port USB-JTAG Digilent do komunikacji i programowania FPGA,
+			\item Cztery porty Pmod,
+			\item 100MHz rezonator kwarcowy.
 		\end{itemize}
 
 	\subsection{SystemVerilog}
 	\hspace{5mm}
-		Język opisu sprzętu, jest rozszerzeniem języka Verilog. Dodaje on nowe typy danych: \textit{logic, enum, byte, shortint, int, longint, struct, union}, wielowymiarowe tablice. Dodano również nowe bloki proceduralne: \textit{always\_comb, always\_latch, always\_ff}. Wprowadzono interfejsy wraz z \textit{modportami}, pomagają one zapanować nad portami w projekcie. Udoskonalono weryfikację poprzez dodanie nowego typu danych: \textit{string}, klas, asercji oraz \textit{constrained random generation} pozwalający narzucić ograniczenia podczas randomizacji.\cite{SV}
-			
-			\subsubsection{Xilinx Vivado Design Suite}
-			\hspace{5mm}
-				Vivado Design Suite - oprogramowanie firmy Xilinx dla syntezy i analizy projektów HDL. Posiada wbudowany symulator \textit{ISIM} oraz \textit{Vivado IP Integrator} pozwalający na szybkie zarządzanie IP.
-				
-			\subsubsection{Aldec Riviera-PRO}
-			\hspace{5mm}
-				Riviera-PRO komercyjny symulator HDL firmy Aldec. Obsługuje on bibliotekę UVM, randomizacje, asercje oraz może być wykorzystany do generacji programów assembler w celu weryfikacji działania SoCa.
+		Język opisu sprzętu, jest rozszerzeniem języka Verilog. Dodaje on nowe typy danych: \textit{logic, enum, byte, shortint, int, longint, struct, union}, wielowymiarowe tablice. Dodano również nowe bloki proceduralne: \textit{always\_comb, always\_latch, always\_ff}. Wprowadzono interfejsy wraz z \textit{modportami}, pomagają one zapanować nad portami w projekcie. Udoskonalono weryfikację poprzez dodanie nowego typu danych: \textit{string}, klas, asercji oraz \textit{constrained random generation} pozwalający narzucić ograniczenia podczas randomizacji\cite{SV}.
+Narzędziem syntezującym ten język jest Vivado Design Suite - oprogramowanie firmy Xilinx dla syntezy i analizy projektów HDL. Posiada wbudowany symulator \textit{ISIM} oraz \textit{Vivado IP Integrator} pozwalający na szybkie zarządzanie IP. Programem ułatwiającym pracę jest Riviera-PRO komercyjny symulator HDL firmy Aldec. Obsługuje on bibliotekę UVM, randomizacje, asercje oraz może być wykorzystany do generacji programów assembler w celu weryfikacji działania systemu na chipie. Narzędziem które generuje skryptu dla kompilacji jak i syntezy jest Bender.
 				
 \newpage
 
 \section{Implementacja}
 
-	\subsection{System na czipie}
+	\subsection{System na chipie}
 	\hspace{5mm}
 	Modułem głównym projektu jest \textit{ibex\_soc}. Nazwy jego portów, parametru i ich przeznaczenie zostały przedstawione w tabeli \ref{Tab:soc_ports}
 
@@ -748,10 +759,11 @@ UVM test składa się z następujących elementów:
 		\end{center}
 Parametr \textit{SPI\_SLAVE\_NUMBER} definiuje ilość wyjść wybory slave. Wejście sygnału zegarowego zostało podłączone do rezonatora kwarcowego o częstotliwości 100MHz. Wejście resetu zostało podłączone do przełącznika znajdującego się na płytce FPGA, jest on aktywny w stanie niskim. Sygnały \textit{GPIO} zostały podłączone do diod LED oraz przełączników. Sygnały \textit{UART} zostały podłączone do znajdującego się na płytce konwertera \textit{USB-UART}. Pozostałe sygnały zostały połączone z portami \textit{Pmod}.
 \\
-Tabela \ref{Tab:instancje_soc} przedstawia nazwy modułów i odpowiadające im instancje, zainicjowane w \textit{ibex\_soc}.
-
+Tabela \ref{Tab:instancje_soc} przedstawia nazwy modułów i odpowiadające im instancje, zainicjowane w \textit{ibex\_soc}.\\
+\begin{minipage}{\textwidth}
+			\captionof{table}{Instancje modułów znajdujących się w \textit{ibex\_soc}\label{Tab:instancje_soc}}
 			\begin{center}
-			\captionof{table}{Instancje modułów znajdujących się w \textit{ibex\_soc}\label{Tab:instancje_soc}}\small
+			\scalebox{0.85}{\small
 				\begin{tabular}{|c|c|c|}
 					\hline
 					nazwa modułu/interfejsu & nazwa instancji & przeznaczenie \\
@@ -787,8 +799,9 @@ Tabela \ref{Tab:instancje_soc} przedstawia nazwy modułów i odpowiadające im i
 					wishbone\_if & wb\_slave & tablica interfejsów przeznaczona dla peryferii \\
 					\hline													
 				\end{tabular}
-		\end{center}
-
+				}
+				\end{center}
+				\end{minipage}
 Szczegółowy opis powyższych modułów znajduje się w kolejnych podrozdziałach. 
 Moduł ten importuje również paczkę z mapą pamięci. Są w niej zdefiniowane parametry opisujące adres bazowy jak i rozmiar. Listing \ref{Lis:memory-map} przedstawia te parametry.
 
@@ -796,7 +809,6 @@ Moduł ten importuje również paczkę z mapą pamięci. Są w niej zdefiniowane
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:memory-map,caption=Mapa pamięci]
 package addr_map_pkg;
-
 	parameter NUM_MASTER = 2;
 	parameter NUM_SLAVE = 7;
 	parameter RAM_INSTR_BASE_ADDR   = 'h00000000;
@@ -813,7 +825,6 @@ package addr_map_pkg;
 	parameter SPI_SIZE              = 'h0fff;
 	parameter TIMER_BASE_ADDR       = 'h10004000;
 	parameter TIMER_SIZE            = 'h0fff;
-
 endpackage
 \end{lstlisting}
 \end{scriptsize}
@@ -824,11 +835,11 @@ Parametr \textit{NUM\_MASTER} definiuje ilość \textit{masterów} w projekcie. 
 	\hspace{5mm}
 		Głównym modułem rdzenia jest \textit{ibex\_core}. By poprawnie działał z magistralą \textit{Wishbone}, należy opisać \textit{wrapper} w odpowiedni sposób. W tym celu powstał moduł \textit{ibex\_wishbone}, jego zadaniem jest poprawne przeniesienie sygnałów do interfejsów magistrali \textit{Wishbone}. Zostały w nim zainicjowane następujące moduły/interfejsy:
 \begin{itemize}
-	\item \textit{data\_core} - interfejs \textit{ibex\_if} z sygnałami danych.
-	\item \textit{instr\_core} - interfejs \textit{ibex\_if} z sygnałami instrukcji.
-	\item \textit{u\_core} - instancja modułu \textit{ibex\_core}
-	\item \textit{data\_core2wb} - instancja modułu \textit{ibex\_to\_wb}
-	\item \textit{instr\_core2wb} - instancja modułu \textit{ibex\_to\_wb}
+	\item \textit{data\_core} - interfejs \textit{ibex\_if} z sygnałami danych,
+	\item \textit{instr\_core} - interfejs \textit{ibex\_if} z sygnałami instrukcji,
+	\item \textit{u\_core} - instancja modułu \textit{ibex\_core},
+	\item \textit{data\_core2wb} - instancja modułu \textit{ibex\_to\_wb},
+	\item \textit{instr\_core2wb} - instancja modułu \textit{ibex\_to\_wb}.
 \end{itemize}		
 Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusić stan niski na sygnałach: \textit{we}, \textit{be} i \textit{wdata} w celu zabezpieczenia przypadkowego zapisu w pamięci instrukcji.
 			
@@ -868,26 +879,28 @@ Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusi�
 					input & output & err & sygnał błędu\\
 					\hline
 				\end{tabular}
-		\end{center}
+				\end{center}
 		\end{minipage}
 	\subsubsection{\textit{Ibex core}}
 	\hspace{5mm}
 		Moduł \textit{ibex\_core} został zainjonowany jako \textit{u\_core}. Zawiera on w sobie wszystkie submoduły rdzenia,a są to:
 \begin{itemize}
-	\item \textit{Clock gating} - moduł zawierający bufor sygnału zegarowego.
-	\item \textit{Instruction Fetch} - odpowiedzialny za pobieranie instrukcji. W jednym cyklu dostarcza instrukcję do \textit{ibex\_id\_stage} o ile pamięć jest zdolna do wysłania jednej instrukcji na cykl. Instrukcje są przechwytywane do \textit{ibex\_prefetch\_buffer} w celu optymalizacji wydajności. Rozkazy są zapisywane wraz licznikiem rozkazów i pochodzą z \textit{ibex\_fetch\_fifo}. Gdy  \textit{FIFO} jest puste, instrukcja natychmiast zostaje przekazana na jego wyjście.
+	\item \textit{Clock gating} - moduł zawierający bufor sygnału zegarowego,
+	\item \textit{Instruction Fetch} - odpowiedzialny za pobieranie instrukcji. W jednym cyklu dostarcza instrukcję do \textit{ibex\_id\_stage} o ile pamięć jest zdolna do wysłania jednej instrukcji na cykl. Instrukcje są przechwytywane do \textit{ibex\_prefetch\_buffer} w celu optymalizacji wydajności. Rozkazy są zapisywane wraz licznikiem rozkazów i pochodzą z \textit{ibex\_fetch\_fifo}. Gdy  \textit{FIFO} jest puste, instrukcja natychmiast zostaje przekazana na jego wyjście,
 	\item \textit{Instruction Decode} - odpowiedzialny za dekodowanie instrukcji. Zawiera on w sobie multipleksery, kontrolujące przepływ danych do \textit{ALU},
-	\item \textit{Instruction Execute} - odpowiedzialny za wykonanie instrukcji, zawiera on w sobie \textit{ALU} i moduły odpowiedzialne za mnożenie i dzielnie. 
+	\item \textit{Instruction Execute} - odpowiedzialny za wykonanie instrukcji, zawiera on w sobie \textit{ALU} i moduły odpowiedzialne za mnożenie i dzielnie, 
 	\begin{itemize}
 		\item \textit{Arithmetic Logic Unit} - jednostka arytmetyczno-logiczna, blok kombinacyjny wykonujący obliczenia liczb całkowitych oraz operacje porównawcze.
-		Dodatkowo jest wykorzystywany:
+		Doda-\\tkowo jest wykorzystywany:
 		\begin{itemize}
-			\item w wykonywaniu dodawania w ramach algorytmów mnożenia i dzielenia
-			\item w obliczaniu \textit{PC}+\textit{Imm}
-			\item w obliczaniu adresu pamięci \textit{Reg}+\textit{Imm}
+			\item w wykonywaniu dodawania w ramach algorytmów mnożenia i dzielenia,
+			\item w obliczaniu \textit{PC}+\textit{Imm},
+			\item w obliczaniu adresu pamięci \textit{Reg}+\textit{Imm},
 		\end{itemize}
 		\item \textit{Multiplier/Divider Block} - blok wykorzystywany do mnożenia i dzielenia. Są dostępne dwa tryby: szybki i wolny. Oba wykorzystują algorytm długiego podziału oraz jednostkę arytmetyczno-logiczną.
 	\end{itemize}
+		\item \textit{\textit{Register File}} - zawiera trzydzieści dwa lub szesnaście 32-bit rejestrów. Liczba ich jest zależna od rozszerzenia \textit{RV32E}. Rejestr \textit{x0} jest zawsze zerem. Moduł ten posiada dwa porty przeznaczone dla odczytu i jeden dla zapisu. Gdy dany rejestr jest równocześnie zapisywany i odczytywany, zwróci on wartość aktualną a nie zapisywaną,
+	\item \textit{Control and Status Registers} - zawiera rejestry kontrolne i statusu,
 	\item \textit{Load-Store Unit} - odpowiedzialny za dostęp do pamięci danych. Pozwala działać na słowach (32-bit) pół-słowach(16-bit) i bajtach(8-bit). Każda operacja zapisania lub odczytu danych powoduje zatrzymacie bloków \textit{ID/EX} na przynajmniej jeden cykl w celu oczekiwania na odpowiedź. Potrafi obsłużyć źle   ustawiony dostęp do pamięci, czyli dostęp, który nie jest w domyślnych granicach słowa. Potrzeba na to co najmniej dwóch cykli ponieważ są robione dwa osobne zapisania. Komunikacja z pamięcią odbywa się w następujący sposób:
 		\begin{enumerate}
 			\item Jednsotka LSU wysyła adres poprzez \textit{data\_addr\_o}, konfiguruje wyjścia \textit{data\_be\_o}, \textit{data\_wdata\_o}, ustawia stan wysoki sygnału \textit{data\_req\_o} i \textit{data\_we\_o}. Gdy pamięć będzie gotowa do obsługi żądania, odpowiada stanem wysokim sygnału \textit{data\_gnt\_i}.
@@ -897,14 +910,14 @@ Wykorzystuje on przypisanie ciągłe by w instancji \textit{instr\_core} wymusi�
 		\end{enumerate}
 		Rysunek \ref{Fig:memory_access} przedstawia przykład komunikacji między modułem \textit{LSU} a pamięcią.
 			\begin{samepage}
-				\captionof{figure}{Komunikacja \textit{LSU} z pamięcią\label{Fig:memory_access}}
+
 				\nopagebreak
 				\begin{center}
 					\includegraphics[width=14cm]{./rysunki/memory_access.png}
 				\end{center}
+				\captionof{figure}{Komunikacja \textit{LSU} z pamięcią\label{Fig:memory_access}\cite{ibex_doc}}				
 			\end{samepage}
-	\item \textit{\textit{Register File}} - zawiera trzydzieści jeden lub piętnaście 32-bit rejestrów. Liczba ich jest zależna od rozszerzenia \textit{RV32E}. Rejestr \textit{x0} jest zawsze zerem. Moduł ten posiada dwa porty przeznaczone dla odczytu i jeden dla zapisu. Gdy dany rejestr jest równocześnie zapisywany i odczytywany, zwróci on wartość aktualną a nie zapisywaną.
-	\item \textit{Control and Status Registers} - zawiera rejestry kontrolne i statusu.
+
 \end{itemize}
 		 
 		\subsubsection{Komunikacja rdzenia z magistralą \textit{Wishbone}}
@@ -943,13 +956,13 @@ W module tym zostało wykorzystane przypisanie ciągłe w celu przekazania warto
 \end{scriptsize}
 \end{minipage}
 Dzięki temu zabiegowi, każda zmiana sygnału zostanie przeniesiona na magistralę \textit{Wishbone}.
-	\subsection{Wishbone}
+	\subsection{\textit{Wishbone}}
 	\hspace{5mm}
 Magistrala \textit{Wishbone} składa się z następujących komponentów:
 \begin{itemize}
 \item Instancje interfejsu \textit{wishbone\_if}: \textit{wb\_master} i \textit{wb\_slave},
 \item instancji modułu \textit{wishbone\_sharedbus}: \textit{wb\_share\_bus},
-\item modułów służących do podłączenia komponentów systemu na czipie do magistrali:
+\item modułów służących do podłączenia komponentów systemu na chipie do magistrali:
 	\begin{itemize}
 		\item \textit{wb\_gpio} - moduł łączący GPIO z magistralą,
 		\item \textit{wb\_uart} - moduł łączącu UART z magistralą,
@@ -963,8 +976,9 @@ Magistrala \textit{Wishbone} składa się z następujących komponentów:
 Rysunek \ref{Fig:wishbone_ibex} przedstawia porównanie komunikacji magistrali \textit{Wishbone} z komunikacją \textit{LSU} z pamięcią.
 
 			\begin{minipage}{\textwidth}
-				\captionof{figure}{Porównanie komunikacji Ibex z \textit{Wishbone}\label{Fig:wishbone_ibex}}
+
 					\includegraphics[width=14cm]{./rysunki/timing.png}
+									\captionof{figure}{Porównanie komunikacji Ibex z \textit{Wishbone}\label{Fig:wishbone_ibex}}
 			\end{minipage} 
 
 \subsubsection{Interfejs magistrali \textit{Wishbone}}
@@ -976,8 +990,8 @@ Interfejs magistrali posiada dwie instancje:
  W celu zarządzania kierunkami sygnałów, zostały utworzone dwa modporty: \textit{master} i \textit{slave}. Wyprowadzenia oraz ich przeznaczenie zostały opisane w tabeli \ref{Tab:wb_if}.
  \\
  \begin{minipage}{\textwidth}
-		 \begin{center}
-			\captionof{table}{Sygnały interfejsu \textit{wishbone\_if}\label{Tab:wb_if}}
+ \begin{center}
+			\captionof{table}{Sygnały interfejsu \textit{wishbone\_if}\label{Tab:wb_if}}\small
 				\begin{tabular}{|c|c|c|c|}
 					\hline
 					\multicolumn{2}{|c|}{Kierunek sygnału} & \multirow{2}{*}{Nazwa sygnału} & \multirow{2}{*}{Przeznaczenie}\\
@@ -1009,7 +1023,7 @@ Interfejs magistrali posiada dwie instancje:
 					input & output & stall & sygnał zajętości\\
 					\hline
 				\end{tabular}
-		\end{center}
+				\end{center}
 		\end{minipage}
 		\subsubsection{Połączenia magistrali \textit{Wishbone}}
 		\hspace{5mm}
@@ -1017,12 +1031,12 @@ Interfejs magistrali posiada dwie instancje:
 		\begin{itemize}
 		\item \textit{num\_master = -1} - określa liczbę urządzeń typu \textit{master},
 		\item \textit{num\_slave = -1} - określa liczbę urządzeń typu \textit{slave},
-		\item \textit{bit [31:0] base\_addr[num\_slave] = '\{-1\}} - tablica adresów początkowych urządzeń typu \textit{slave}. Jej szerokość definiowana jest poprzez parametr \textit{num\_slave}, każde jej pole to liczba całkowita 32bitowa.
-		\item \textit{bit [31:0] size[num\_slave] = '\{-1\} } - tablica szerokości adresu pod jakim znajduje się urządzenie typu \textit{slave}. Jej szerokość definiowana jest poprzez parametr \textit{num\_slave}, każde jej pole to liczba całkowita 32bitowa.
+		\item \textit{bit [31:0] base\_addr[num\_slave] = '\{-1\}} - tablica adresów początkowych urządzeń typu \textit{slave}. Jej szerokość definiowana jest poprzez parametr \textit{num\_slave}, każde jej pole to liczba całkowita 32-bitowa.
+		\item \textit{bit [31:0] size[num\_slave] = '\{-1\} } - tablica szerokości adresu pod jakim znajduje się urządzenie typu \textit{slave}. Jej szerokość definiowana jest poprzez parametr \textit{num\_slave}, każde jej pole to liczba całkowita 32-bitowa.
 		\end{itemize}		 
 		Wartość domyślna parametrów to $-1$, ma to uchronić przed złym przypisaniem wartości podczas inicjalizacji tego modułu. Lista portów tego modułu składa się z dwóch modportów:
 		\begin{itemize}
-			\item \textit{wishbone\_if.slave wb\_master[num\_master]} - port przeznaczony dla odczytu informacji z urządzeń typu \textit{master}. Został użyty modport \textit{slave} w celu zabezpieczenia przed przypadkowym nadpisaniem sygnałów.
+			\item \textit{wishbone\_if.slave wb\_master[num\_master]} - port przeznaczony dla odczytu informacji z urządzeń typu \textit{master}. Został użyty modport \textit{slave} w celu zabezpieczenia przed przypadkowym nadpisaniem sygnałów,
 			\item \textit{wishbone\_if.master wb\_slave[num\_slave]} - port przeznaczony do odczytu informacji z urządzeń typu \textit{slave}. Został użyty modport \textit{master} w celu zabezpieczenia przed przypadkowym nadpisaniem sygnałów.
 		\end{itemize}
 		Przykładowa inicjalizacja modułu została pokazana na Listingu \ref{Lis:shared_bus}. Kolejność parametrów podanych do przypisania tablicy \textit{base\_addr} i \textit{size} musi się zgadzać z indeksem przypisanym dla poszczególnego komponentu. \\
@@ -1121,12 +1135,13 @@ Informacja o wyborze danego urządzenia jest przekazywana za pomocą nie blokuj�
 Jeśli urządzenie \textit{slave} zostało wybrane, przekazywane są do niego sygnały z urządzenia \textit{master} w kolejnym cyklu zegarowym dane są przypisywane do urządzenia \textit{master}.\\
 Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \textit{cyc} informujący o żądaniu mastera następuje zapisanie stanu wysokiego dla sygnału \textit{gnt}, w kolejnym cyklu zegarowym wartość ta jest przekazywana do \textit{gnt\_1} w celu zachowania potokowości. Gdy urządzenie \textit{master} jest gotowe do działania, zapisuje dane do sygnałów wspólnych, te przekazują je urządzeniu \textit{slave}. Potwierdzeniem udanej transmisji jest przekazanie sygnału \textit{ack} potwierdzającego odczyt danych przez peryferia i sygnału \textit{err}, który komunikuje o problemach.\\ Rysunek \ref{Fig:wishbone_timing} przedstawia przebiegi sygnałów tego modułu uzyskanych dzięki symulacji. Po otrzymaniu prawidłowego adresu sygnał \textit{ss} zmienił swój stan na wysoki, w kolejnym cylku zegarowym stan wysoki przyjmuje sygnał \textit{ss1} - co odpowiada opisowi. Pojawienie się jedynki logicznej w sygnale \textit{stb} spowodowało aktywację sygnału \textit{gnt} a z kolejnym cyklem zegarowym wartość ta zostaje przepisana na sygnał \textit{gnt1}. Wysoki stan \textit{ss} spowodował aktywację urządzenie \textit{slave}, można to zauważyć poprzez pojawienie się adresu na linii \textit{wb\_slave\_addr}, dzięki \textit{ss1} dane z linii \textit{wb\_slave\_data\_i[0]} zostały przekazane do \textit{data\_rd}, sygnał \textit{gnt\_1} pozwolił na zapis ich na linii \textit{wb\_master\_data\_o[1]} \\
 			\begin{minipage}{\textwidth}
-				\captionof{figure}{Przebiegi sygnałów podczas symulacji\label{Fig:wishbone_timing}}
+
 				\begin{center}
 					\includegraphics[height=16cm,width=14cm,keepaspectratio]{./rysunki/wishbone_timing.png}
 				\end{center}
+								\captionof{figure}{Przebiegi sygnałów podczas symulacji\label{Fig:wishbone_timing}}
 			\end{minipage} 
-	\subsection{Pamięć RAM}
+	\subsection{Pamięć \textit{RAM}}
 		\subsubsection{Komunikacja pamięci z magistralą \textit{Wishbone}}
 			\hspace{5mm}
 			W celu poprawnej komunikacji z magistralą należało opisać moduł, którego zadaniem jest poprawna konwersja i przekazywanie sygnałów między magistralą a pamięcią \textit{RAM}. Moduł posiada parametr: \textit{SIZE}, informujący o pojemności tejże pamięci, oraz lokalny parametr:\textit{ADDR\_WIDTH} informujący o szerokości pola adresowego, powstaje on dzięki obliczeniu logarytmu o podstawie dwa z parametru \textit{SIZE}. Parametry te są dalej przekazywane dla modułów opisujących pamięć \textit{RAM}. Listing \ref{Lis:wb_ram} przedstawia komunikacje między pamięcią a magistralą.
@@ -1180,7 +1195,7 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
-		Komórka pamięci składa się z 32bitów, ilość komórek jest definiowana przez parametr \textit{SIZE}. Argument \textit{/*sparse*/} został użyty w celu optymalizacji symulacji. Parametr \textit{MEM\_FILE} określa ścieżkę do pliku, który zostanie załadowany do pamięci. Podczas wysokiego stanu sygnału \textit{valid\_i} zostaje odczytana komórka pamięci ze wskazanego adresu. Zezwala on również na zapis do komórki pamięci, gdy odpowiedni bit sygnału \textit{we\_i} przejdzie w stan wysoki. Sygnał ten jest 4bitowy, każdy bit odpowiada jednemu bajtu w komórce pamięci. Pamięć jest jednoportowa więc w danej chwili czasu dozwolona jest operacja zapisu lub odczytu danych. By zapobiec kolizji, zaimplementowano dwie pamięci \textit{RAM}, pierwsza odpowiedzialna za przechowywanie instrukcji, druga odpowiedzialna za przechowywanie danych. Pamięć instrukcji została przypisana do zerowej komórki tablicy instancji \textit{wb\_slave} interfejsu \textit{wishbone\_if}, natomiast pamięć danych do pierwszej komórki. Rysunek \ref{Fig:ram_sim} przedstawia przebiegi sygnałów oraz fragment pamięci RAM. Podczas wysokiego stanu sygnału \textit{valid}, pojawiła się informacja o chęci odczytu z danych z komórki o adresie \textit{0020}. Pod tym adresem zapisana jest wartość \textit{0100006F} która w następnym cyklu zegarowym trafia na wyprowadzenie \textit{data\_o}, sytuacja ta powtarza się do momentu pojawienia się stanu niskiego sygnału \textit{valid}. Rysunek \ref{Fig:ram_write} przedstawia sytuacje zapisu do pamięci. Na linii adresowej pojawia się \textit{00}, sygnał \textit{valid\_i} jest w stanie wysokim. Oznacza to, że w następnym cyklu zegarowym do komórki pamięci o adresie \textit{0} zostanie przypisana wartość znajdująca się w \textit{data\_i}. Jak widać na przebiegu sygnałów wartość ta została poprawnie zapisana. Gdy sygnał \textit{valid\_i} jest w stanie niskim, wartość z linii \textit{data\_o} nie powinna zostać przekazana do pamięci. Na przebiegach również została ukazana taka sytuacja, linia adresowa przyjmuje wartość \textit{1D} lecz komórka pamięci o tym adresie nie zostaje zapisana. Listing \ref{Lis:ram_1p_in} i \ref{Lis:ram_1p_data} przedstawiają instancje modułów pamięci.\\
+		Komórka pamięci składa się z 32-bitów, ilość komórek jest definiowana przez parametr \textit{SIZE}. Argument \textit{/*sparse*/} został użyty w celu optymalizacji symulacji. Parametr \textit{MEM\_FILE} określa ścieżkę do pliku, który zostanie załadowany do pamięci. Podczas wysokiego stanu sygnału \textit{valid\_i} zostaje odczytana komórka pamięci ze wskazanego adresu. Zezwala on również na zapis do komórki pamięci, gdy odpowiedni bit sygnału \textit{we\_i} przejdzie w stan wysoki. Sygnał ten jest 4-bitowy, każdy bit odpowiada jednemu bajtu w komórce pamięci. Pamięć jest jednoportowa więc w danej chwili czasu dozwolona jest operacja zapisu lub odczytu danych. By zapobiec kolizji, zaimplementowano dwie pamięci \textit{RAM}, pierwsza odpowiedzialna za przechowywanie instrukcji, druga odpowiedzialna za przechowywanie danych. Pamięć instrukcji została przypisana do zerowej komórki tablicy instancji \textit{wb\_slave} interfejsu \textit{wishbone\_if}, natomiast pamięć danych do pierwszej komórki. Rysunek \ref{Fig:ram_sim} przedstawia przebiegi sygnałów oraz fragment pamięci RAM. Podczas wysokiego stanu sygnału \textit{valid}, pojawiła się informacja o chęci odczytu z danych z komórki o adresie \textit{0020}. Pod tym adresem zapisana jest wartość \textit{0100006F} która w następnym cyklu zegarowym trafia na wyprowadzenie \textit{data\_o}, sytuacja ta powtarza się do momentu pojawienia się stanu niskiego sygnału \textit{valid}. Rysunek \ref{Fig:ram_write} przedstawia sytuacje zapisu do pamięci. Na linii adresowej pojawia się \textit{00}, sygnał \textit{valid\_i} jest w stanie wysokim. Oznacza to, że w następnym cyklu zegarowym do komórki pamięci o adresie \textit{0} zostanie przypisana wartość znajdująca się w \textit{data\_i}. Jak widać na przebiegu sygnałów wartość ta została poprawnie zapisana. Gdy sygnał \textit{valid\_i} jest w stanie niskim, wartość z linii \textit{data\_o} nie powinna zostać przekazana do pamięci. Na przebiegach również została ukazana taka sytuacja, linia adresowa przyjmuje wartość \textit{1D} lecz komórka pamięci o tym adresie nie zostaje zapisana. Listing \ref{Lis:ram_1p_in} i \ref{Lis:ram_1p_data} przedstawiają instancje modułów pamięci.\\
 \begin{minipage}{.49\textwidth}
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:ram_1p_in,caption=Instancja pamięci instrukcji]
@@ -1214,20 +1229,21 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{scriptsize}
 \end{minipage}\\
 					\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz jej dane podczas odczytu.\label{Fig:ram_sim}}
+
 
 					\includegraphics[width=\textwidth]{./rysunki/ram_sim.png}
 					\includegraphics[width=\textwidth]{./rysunki/pamiec_ram.png}
-
+				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} oraz jej dane podczas odczytu.\label{Fig:ram_sim}}
 			\end{minipage} 
 					\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} podczas zapisu.\label{Fig:ram_write}}
+
 					\includegraphics[width=\textwidth]{./rysunki/zapis_ram.png}
+				\captionof{figure}{Przebiegi sygnałów pamięci \textit{RAM} podczas zapisu.\label{Fig:ram_write}}					
 			\end{minipage} 
 			
 		\subsubsection{Pamięć dwuportowa}
 			\hspace{5mm}
-			Pamięć dwu portowa składa się z dwóch zestawów linii adresowych, danych i sterujących. Pozwala to na jednoczesny dostęp do pamięci dwóm niezależnym procesom do wspólnych danych. Komórka pamięci składa się z 32bitów a ilość komórek jest definiowana przez parametr \textit{SIZE}. Inicjalizacja pamięci odbywa się poprzez podanie ścieżki do pliku w parametrze \textit{MEM\_FILE}. Zapis i odczyt działa w sposób analogiczny jak w przypadku pamięci jednoportowej. Gdy obie linie adresowe wskazują tą samą komórkę, pierwszeństwo ma linia z instrukcji oznaczona literą \textit{b}. Listing \ref{Lis:ram_2p} przedstawia inicjalizację tego modułu. Sygnały \textit{b\_we\_i} i \textit{b\_data\_i} zostały przypisane do zera ponieważ w aktualnej wersji przewiduje jedynie wgrywanie kodu maszynowego poprzez podanie odpowiedniej ścieżki za pomocą parametru \textit{MEM\_FILE}.\\
+			Pamięć dwu portowa składa się z dwóch zestawów linii adresowych, danych i sterujących. Pozwala to na jednoczesny dostęp do pamięci dwóm niezależnym procesom do wspólnych danych. Komórka pamięci składa się z 32-bitów a ilość komórek jest definiowana przez parametr \textit{SIZE}. Inicjalizacja pamięci odbywa się poprzez podanie ścieżki do pliku w parametrze \textit{MEM\_FILE}. Zapis i odczyt działa w sposób analogiczny jak w przypadku pamięci jednoportowej. Gdy obie linie adresowe wskazują tą samą komórkę, pierwszeństwo ma linia z instrukcji oznaczona literą \textit{b}. Listing \ref{Lis:ram_2p} przedstawia inicjalizację tego modułu. Sygnały \textit{b\_we\_i} i \textit{b\_data\_i} zostały przypisane do zera ponieważ w aktualnej wersji przewiduje jedynie wgrywanie kodu maszynowego poprzez podanie odpowiedniej ścieżki za pomocą parametru \textit{MEM\_FILE}.\\
 						\begin{minipage}{\textwidth}
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:ram_2p,caption=Inicjalizacja dwuportowej pamięci RAM]
@@ -1251,7 +1267,7 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{scriptsize}
 \end{minipage}
 
-	\subsection{GPIO}
+	\subsection{\textit{GPIO}}
 		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
 		\hspace{5mm}	W celu poprawnej komunikacji należało przygotować moduł odpowiedzialny za konwersję i przekazywanie danych między \textit{GPIO} a magistralą. Rolę tę pełni \textit{wb\_gpio}. Moduł ten zawiera instancję \textit{GPIO} oraz sygnały pomocnicze do komunikacji. Listing \ref{Lis:gpio_wb} przedstawia fragment tego modułu.\\
 									\begin{minipage}{\textwidth}
@@ -1273,7 +1289,7 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
-		Do linii \textit{data\_s} został przypisany sygnał pochodzący z instancji \textit{GPIO} \textit{data\_s}, jest on 4bitowy więc by w pełni zapełnić przestrzeń zastosowano konkatenację. Sygnały \textit{wb.err} i \textit{wb.stall} zostały przypisane do zera. Projekt sytuacji by te sygnały mogą się pojawić. Wybór kierunku transmisji jest wybierany poprzez ustawienie odpowiedniego bitu w sygnale \textit{wb.addr}. Jeśli wartość tego wektora będzie równa \textit{0}, dane zostaną przekazane do wyjścia, jeśli wartość wektora będzie równa \textit{1}, dane zostaną odczytane z wejść. Sygnał \textit{valid} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Sygnał \textit{wb.ack} przyjmuje stan wysoki jeden cykl zegarowy po pojawieniu się sygnału \textit{valid}. 
+		Do linii \textit{data\_s} został przypisany sygnał pochodzący z instancji \textit{GPIO} \textit{data\_s}, jest on 4-bitowy więc by w pełni zapełnić przestrzeń zastosowano konkatenację. Sygnały \textit{wb.err} i \textit{wb.stall} zostały przypisane do zera. Projekt nie przewiduje sytuacji by te sygnały mogą się pojawić. Kierunek transmisji jest wybierany poprzez ustawienie odpowiedniego bitu w sygnale \textit{wb.addr}. Jeśli wartość tego wektora będzie równa \textit{0}, dane zostaną przekazane do wyjścia, jeśli wartość wektora będzie równa \textit{1}, dane zostaną odczytane z wejść. Sygnał \textit{valid} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Sygnał \textit{wb.ack} przyjmuje stan wysoki jeden cykl zegarowy po pojawieniu się sygnału \textit{valid}. 
 \subsubsection{Moduł \textit{GPIO}}		
 	\hspace{5mm}	 Opis modułu \textit{GPIO} został przedstawiony na listingu \ref{Lis:gpio_module}. Podczas resetu wszystkie sygnały są zerowane. Następnie w zależności od wybranego trybu, dane są przekazywane na diody LED lub odczytywane z przełączników znajdujących się na płytce FPGA. Następnie infomracje są przekazywane do sygnału \textit{data\_s}\\
 											\begin{minipage}{\textwidth}
@@ -1332,21 +1348,22 @@ Obsługa urządzeń \textit{master} jest analogiczna. Gdy pojawi się sygnał \t
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}		
-		W celu przypisania wartości sygnału \textit{uart\_data\_rx} do wektora \textit{wb.data\_s} należy użyć konkatenacji z zerami, ponieważ sygnał ten jest 8bitowy. Zera chronią przed zapisałem niechcianych sygnałów. Sygnał \textit{valid\_i} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Potwierdzenie nadania informacji poprzez transmiter jest uzyskiwane poprzez mnożenie logiczne sygnału \textit{valid\_o} i negacją sygnału \textit{wb.stall}.
+		W celu przypisania wartości sygnału \textit{uart\_data\_rx} do wektora \textit{wb.data\_s} należy użyć konkatenacji z zerami, ponieważ sygnał ten jest 8-bitowy. Zera chronią przed zapisałem niechcianych sygnałów. Sygnał \textit{valid\_i} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Potwierdzenie nadania informacji poprzez transmiter jest uzyskiwane poprzez mnożenie logiczne sygnału \textit{valid\_o} i negacją sygnału \textit{wb.stall}.
 	\subsubsection{Moduł główny \textit{UART}}
 	W module głównym znajdują się instancje transmitera i odbiornika \textit{UART}.  Poprzez parametryzowanie go można określić następujące cechy:
 	\begin{itemize}
-		\item \textit{clk\_freq} - określa częstotliwość zegara systemu na czipie,
+		\item \textit{clk\_freq} - określa częstotliwość zegara systemu na chipie,
 		\item \textit{baud\_rate} - określa szybkość transmisji, w projekcie jego wartość jest równa 19200bps,
-		\item \textit{data\_bits} - określa szerokość wektora danych. W projekcie użyto 8bitowej szerokości
-		\item \textit{parity\_type} - określa bit parzystości, przypisanie zera wyłączy go, jedynki ustawienie go jako bit nieparzystości, dwójki ustawienie go jako bit parzysty. W projekcie bit ten jest wyłączony.
+		\item \textit{data\_bits} - określa szerokość wektora danych. W projekcie użyto 8-bitowej szerokości,
+		\item \textit{parity\_type} - określa bit parzystości, przypisanie zera wyłączy go, jedynki ustawienie go jako bit nieparzystości, dwójki ustawienie go jako bit parzysty. W projekcie bit ten jest wyłączony,
 		\item \textit{stop\_bits} - ilość bitów stopu, dostępny jest wybór między jednym a dwoma bitami. W projekcie występuje jeden bit stopu.
 	\end{itemize}
 	\subsubsection{Implementacja transmitera \textit{UART}}
 	Transmiter został zaimplementowany w oparciu o graf FSM przedstawiony na rysunku \ref{Fig:fsm_uart_tx}\\
 				\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_tx}}
+
 					\includegraphics[width=\textwidth]{./rysunki/uart_tx_fsm.png}
+				\captionof{figure}{Graf \textit{FSM} transmitera \textit{UART}.\label{Fig:fsm_uart_tx}}
 			\end{minipage}
 		Stany te zostały przepisane do lokalnych parametrów, za poruszanie się między nimi odpowiadają zmienne: \textit{tx\_STATE} i \textit{tx\_NEXT}. Podczas resetu sygnały są zerowane i zostaje ustawiony stan \textit{tx\_IDLE}. Po jego zwolnieniu wartości zostają przypisywane do poszczególnych sygnałów. Przedstawia to listing \ref{Lis:uart_tx_reset}.\\
 \begin{minipage}{\textwidth}
@@ -1398,8 +1415,9 @@ W stanie \textit{tx\_STOP} zostaje wysłana odpowiednia ilość bitów stopu. Po
 	\subsubsection{Implementacja odbiornika \textit{UART}}
 	Odbiornik został zaimplementowany w oparciu o graf FSM przedstawiony na rysunku \ref{Fig:fsm_uart_rec} \\
 			\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_rec}}
+
 					\includegraphics[width=\textwidth]{./rysunki/uart_fsm_rec.png}
+				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:fsm_uart_rec}}					
 			\end{minipage} 
 			Stany te zostały zdefiniowane jako lokalne parametry, za poruszanie się między nimi odpowiedzialne są dwie zmienne: \textit{rx\_STATE} oraz \textit{rx\_NEXT}. Podczas resetu sygnały są zerowane, do zmiennej \textit{rx\_STATE} zostaje przypisany stan \textit{rx\_IDLE}. Po jego zwolnieniu następuje przypisanie nie blokujące, które ma na celu przypisania wartości w następnym cyklu zegarowym. W ten sposób aktualizacja stanu nastąpi zawsze na początku cyklu. Listing \ref{Lis:uart_po_res} pokazuje wszystkie przypisania. Całość mieści się w bloku proceduralnym \textit{always\_ff}.\\
 \begin{minipage}{\textwidth}
@@ -1448,8 +1466,7 @@ end
 \end{minipage}	
 Parzystość zostaje sprawdzana za pomocą operatorów redukcji \textit{XOR} i \textit{NXOR} zastosowanych na całym wektorze \textit{rx\_data\_reg}. \\
 W fazie \textit{rx\_STOP} blok czeka na pojawienie się określonej ilości bitów stopu. Gdy warunek ten zostanie spełniony stan wraca do \textit{rx\_IDLE} oraz ustawia logiczną jedynkę dla sygnału potwierdzającego odbiór transmisji.
-
-	\subsection{Interfejs \textit{SPI}}
+\subsection{Interfejs \textit{SPI}}
 		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
 		\hspace{5mm} W celu poprawnej komunikacji z magistralą \textit{Wishbone} , należało stworzyć moduły \textit{wb\_spi\_master} i \textit{wb\_spi\_slave}. Moduły te zawierają instancje \textit{SPI}, oraz pomocnicze sygnały dla poprawnego przekazywania informacji. Listingi \ref{Lis:spi_master} i \ref{Lis:spi_slave} przedstawiają instancję tych modułów. Parametr \textit{SPI\_SLAVE} określa szerokość wektora wyboru urządzeń \textit{slave}. Sygnał \textit{valid} dla modułu \textit{spi\_slave} jest równy koniunkcji sygnałów \textit{wb.cyc} i \textit{wb.stb}. Sygnał wyjściowy powstaje poprzez konkatenację wektora \textit{data\_out} z zerami. Sygnały błędu i zajętości zostały przypisane do zera, ponieważ projekt nie przewiduje ich wystąpienia.\\
 		\begin{minipage}{.49\textwidth}
@@ -1489,12 +1506,13 @@ W fazie \textit{rx\_STOP} blok czeka na pojawienie się określonej ilości bit�
     .miso_o(miso_o));
 \end{lstlisting}
 \end{scriptsize}
-\end{minipage}\\
+\end{minipage}
 		\subsubsection{\textit{SPI Master}}
 		\hspace{5mm} Moduł \textit{SPI Master} został zaimplementowany na podstawie schematu blokowego przedstawionego na rysunku \ref{Fig:spi_master_block}.\\
 					\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Graf \textit{FSM} odbiornika \textit{UART}.\label{Fig:spi_master_block}}
+
 					\includegraphics[width=\textwidth,height=9.5cm]{./rysunki/spi_arch.png}
+				\captionof{figure}{Model \textit{SPI Master}.\label{Fig:spi_master_block}}					
 			\end{minipage} 
 		Rejestry \textit{SPCR}, \textit{SPER}. \textit{SPSR} i \textit{SPDR} znajdują się pod odpowiednim adresem, tabela \ref{Tab:spi_reg} przedstawia je.
 		\\
@@ -1522,35 +1540,37 @@ W fazie \textit{rx\_STOP} blok czeka na pojawienie się określonej ilości bit�
 \\\\
 Zawartość rejestru \textit{SPCR} jest przedstawiona na rysunku \ref{Fig:spcr}. Dostęp do wszystkich jego bitów jest zapis/odczyt.\\
 \begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Rejestr \textit{SPCR}.\label{Fig:spcr}}
+
 					\includegraphics[width=\textwidth]{./rysunki/spcr.png}
+									\captionof{figure}{Rejestr \textit{SPCR}.\label{Fig:spcr}}
 			\end{minipage} 
 			\begin{itemize}
 				\item Bit 7 \textit{SPIE} - Uaktywnienie przerwań SPI - gdy bit ten jest jedynką logiczną, następuje włączenie przerwań, działa tylko gdy bit \textit{SPIF} w rejestrze \textit{SPER} również jest ustawiony na jedynkę logiczną
-				\item Bit 6 \textit{SPE} - Włączenie SPI - gdy bit ten jest jedynką logiczną, następuje włączenie interfejsu SPI
-				\item Bit 4 \textit{MSTR} - Selekcja trybu \textit{master} - gdy bit ten jest jedynką logiczną, następuje przełączenie urządzenia w tryb \textit{master}, w projekcie bit ten zawsze jest jedynką logiczną
-				\item Bit 3 \textit{CPOL} - Polaryzacja zegara, gdy bit ten jest jedynką logiczną, sygnał \textit{SCK} ma wartość wysoką w stanie nieaktywnym. Gdy bit ten jest zerem logicznym, sygnał \textit{SCK} ma wartość niską w stanie nieaktywnym
-				\item Bit 2 \textit{CPHA} - Faza zegara, gdy bit ten jest jedynką logiczną na zboczu narastającym następuje przygotowanie, na zboczu opadającym następuje próbkowanie. Gdy bit ten jest zerem logicznym, zbocze narastające powoduje fazę próbkowania a opadające fazę przygotowania
+				\item Bit 6 \textit{SPE} - Włączenie SPI - gdy bit ten jest jedynką logiczną, następuje włączenie interfejsu SPI,
+				\item Bit 4 \textit{MSTR} - Selekcja trybu \textit{master} - gdy bit ten jest jedynką logiczną, następuje przełączenie urządzenia w tryb \textit{master}, w projekcie bit ten zawsze jest jedynką logiczną,
+				\item Bit 3 \textit{CPOL} - Polaryzacja zegara, gdy bit ten jest jedynką logiczną, sygnał \textit{SCK} ma wartość wysoką w stanie nieaktywnym. Gdy bit ten jest zerem logicznym, sygnał \textit{SCK} ma wartość niską w stanie nieaktywnym,
+				\item Bit 2 \textit{CPHA} - Faza zegara, gdy bit ten jest jedynką logiczną na zboczu narastającym następuje przygotowanie, na zboczu opadającym następuje próbkowanie. Gdy bit ten jest zerem logicznym, zbocze narastające powoduje fazę próbkowania a opadające fazę przygotowania,
 				\item Bit 0 i 1 \textit{SPR} - Wybór częstotliwości zegarowej - bity te kontrolują częstotliwość sygnału \textit{SCK}. Zależność ta, została pokazana w tabeli \ref{Tab:espr}.
 			\end{itemize}
 Zawartość rejestru \textit{SPSR} została przedstawiona na rysunku \ref{Fig:spsr}.\\
 \begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Rejestr \textit{SPSR}.\label{Fig:spsr}}
+
 					\includegraphics[width=\textwidth]{./rysunki/spsr.png}
+				\captionof{figure}{Rejestr \textit{SPSR}.\label{Fig:spsr}}		
 			\end{minipage} 
 			\begin{itemize}
-				\item Bit 7 \textit{SPIF} - Znacznik przerwania SPI - po zakończeniu transferu, bitowi jest przypisywana jedynka logiczna, jeśli bit \textit{SPIE} również jest jedynką logiczną, generowany jest sygnał przerwania.
-				\item Bit 6 \textit{WCOL} - Znacznik kolizji zapisu - bitowi jest przypisywana jedynka logiczna jeśli bit \textit{WFFULL} jest w stanie wysokim i odbywa się zapis do rejestru danych.
+				\item Bit 7 \textit{SPIF} - Znacznik przerwania SPI - po zakończeniu transferu, bitowi jest przypisywana jedynka logiczna, jeśli bit \textit{SPIE} również jest jedynką logiczną, generowany jest sygnał przerwania,
+				\item Bit 6 \textit{WCOL} - Znacznik kolizji zapisu - bitowi jest przypisywana jedynka logiczna jeśli bit \textit{WFFULL} jest w stanie wysokim i odbywa się zapis do rejestru danych,
 				\item Bit 3 \textit{WFFULL} - Znacznik zapełnienia \textit{FIFO} przeznaczonego do zapisu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} zostanie zapełnione,
-				\item Bit 2 \textit{WFEMPTY} - Znacznik pustego \textit{FIFO} przeznaczonego do zapisu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} jest puste
-				\item Bit 1 \textit{WEFULL} - Znacznik zapełnienia \textit{FIFO} przeznaczonego dla odczytu - bitowi jest przypisywana jedynka logiczny, gdy \textit{FIFO} zostanie zapełnione
-				\item Bit 0 \textit{WEEMPTY} - Znacznik pustego \textit{FIFO} przeznaczonego dla odczytu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} jest puste
+				\item Bit 2 \textit{WFEMPTY} - Znacznik pustego \textit{FIFO} przeznaczonego do zapisu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} jest puste,
+				\item Bit 1 \textit{WEFULL} - Znacznik zapełnienia \textit{FIFO} przeznaczonego dla odczytu - bitowi jest przypisywana jedynka logiczny, gdy \textit{FIFO} zostanie zapełnione,
+				\item Bit 0 \textit{WEEMPTY} - Znacznik pustego \textit{FIFO} przeznaczonego dla odczytu - bitowi jest przypisywana jedynka logiczna, gdy \textit{FIFO} jest puste.
 			\end{itemize}
 W rejestrze \textit{SPDR} znajdują się dane, przechowywane one są w dwóch \textit{FIFO}, zapisu i odczytu. Ustawienie zera logicznego na bicie \textit{SPE} powoduje wyczyszczenie \textit{FIFO}. \\
 Zawartość rejestru \textit{SPER} jest przedstawiona na rysunku \ref{Fig:sper}.\\
 \begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Rejestr \textit{SPER}.\label{Fig:sper}}
 					\includegraphics[width=\textwidth]{./rysunki/sper.png}
+				\captionof{figure}{Rejestr \textit{SPER}.\label{Fig:sper}}
 \end{minipage}
 \begin{itemize}
 	\item Bit 6 i 7 \textit{ICNT} - Licznik przerwań - określa potrzebną ilość zakończonych cykli transferowych po których bitowi \textit{SPIF} zostanie przypisana jedynka logiczna. Tabela \ref{Tab:icnt} przedstawia te zależności.
@@ -1614,10 +1634,11 @@ Rejestr \textit{CS} to rejestr wybory urządzeń typu \textit{slave}. \\
 Graf przedstawiony na rysunku \ref{Fig:spi_fsm} przedstawia maszynę stanów odpowiedzialną za transfer informacji. \\
 
 					\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Graf \textit{FSM} \textit{SPI master}.\label{Fig:spi_fsm}}
+
 					\includegraphics[width=\textwidth,height=5.5cm]{./rysunki/fsm_spi.png}
+				\captionof{figure}{Graf \textit{FSM} \textit{SPI master}.\label{Fig:spi_fsm}}					
 			\end{minipage} 
-			 Fazą domyślna jest \textit{IDLE\_STATE}. Jej przebieg został przedstawiony na listingu \ref{Lis:spi_idle}.
+			 Fazą domyślna jest \textit{IDLE\_STATE}. Jej przebieg został przedstawiony na listingu \ref{Lis:spi_idle}.\\
 			 \begin{minipage}{\textwidth}
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:spi_idle,caption=Faza \textit{IDLE\_STATE}]
@@ -1709,10 +1730,7 @@ endcase
 \end{lstlisting}
 \end{scriptsize}
 \end{minipage}
-		\subsubsection{slave}
 		
-		\hspace{5mm} CHUJOWO CHODZI DO POPRAWIENIA!
-			
 
 	\subsection{Interfejs \textit{I2C}}
 		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
@@ -1742,7 +1760,7 @@ endcase
 \end{scriptsize}
 \end{minipage}		
 Sygnały \textit{SDA} i \textit{SCL} są dwukierunkowe, należało więc zastosować bufory trójstanowe w celu  wprowadzenia stanu wysokiej impedancji by unikać konfliktów stanu podczas transmisji innego urządzenia.  Jego opis został przedstawiony na listing \ref{Lis:3state}.\\
- 			 \begin{minipage}{\textwidth}
+ \begin{minipage}{\textwidth}
 \begin{scriptsize}
 \begin{lstlisting}[label=Lis:3state,caption=Bufor trójstanowy]
 	assign IO_SCL = scl_padoen_o ? 'bz : scl_pad_o;
@@ -1755,8 +1773,9 @@ Sygnały \textit{SDA} i \textit{SCL} są dwukierunkowe, należało więc zastoso
 		\subsubsection{Implementacja \textit{I2C}}
 		\hspace{5mm} Interfejs \textit{I2C} został zaimplementowany na podstawie architektury przedstawionej na rysunku \ref{Fig:I2C_arch}. \\
 			\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Architektura interfejsu \textit{I2C}.\label{Fig:I2C_arch}}
+
 					\includegraphics[width=\textwidth,height=5.6cm]{./rysunki/i2c_arch.png}
+				\captionof{figure}{Architektura interfejsu \textit{I2C}.\label{Fig:I2C_arch}}					
 			\end{minipage} 
 			By uzyskać dostęp dla danego rejestru należy odwołać się do poprawnego adresu. Tabela \ref{Tab:I2C_reg} przedstawia przypisane adresy dla danego rejestru.\\
 			 \begin{minipage}{\textwidth}
@@ -1791,78 +1810,504 @@ Sygnały \textit{SDA} i \textit{SCL} są dwukierunkowe, należało więc zastoso
 \end{equation}
 Rejestr \textit{CTR} został przedstawiony na rysunku \ref{Fig:I2C_ctr}.\\
 			\begin{minipage}[c]{\textwidth}
-				\captionof{figure}{Rejestr kontrolny.\label{Fig:I2C_ctr}}
+
 					\includegraphics[width=\textwidth]{./rysunki/ctr_i2c.png}
+				\captionof{figure}{Rejestr kontrolny.\label{Fig:I2C_ctr}}					
 			\end{minipage} 
 			\begin{itemize}
-				\item Bit 7 - EN - Uaktywnienie interfejsu \textit{I2C} - gdy bit ten jest logiczną jedynką interfejs \textit{I2C} jest aktywny, przypisanie zera logicznego dezaktywuje go.
-				\item Bit 6 - IEN - Uaktywnienie przerwań - gdy bit ten jest logiczną jedynką przerwania interfejsu \textit{I2C} zostają włączone.
+				\item Bit 7 - EN - Uaktywnienie interfejsu \textit{I2C} - gdy bit ten jest logiczną jedynką interfejs \textit{I2C} jest aktywny, przypisanie zera logicznego dezaktywuje go,
+				\item Bit 6 - IEN - Uaktywnienie przerwań - gdy bit ten jest logiczną jedynką przerwania interfejsu \textit{I2C} zostają włączone,
 				\item Bit 5 - SE - Uaktywnienie trybu \textit{slave} - gdy bit ten jest logiczną jedynką następuje zmiana trybu z \textit{master} na \textit{slave}.
 			\end{itemize}
 			Rejestr nadawczy i odbiorczy składają się z jednego bajtu który zostanie nadany lub został odebrany.\\
 			Rejestr \textit{CR} został przedstawiony na rysunku \ref{Fig:i2c_cr}.\\
 	\begin{minipage}[c]{\textwidth}
-	\captionof{figure}{Rejestr kontrolny.\label{Fig:i2c_cr}}
+
 					\includegraphics[width=\textwidth]{./rysunki/cr_i2c.png}
+	\captionof{figure}{Rejestr komend.\label{Fig:i2c_cr}}					
 	\end{minipage} 
 \begin{itemize}
-	\item Bit 7 - STA - wysyła sygnał startu
-	\item Bit 6 - STOP - wysyła sygnał stopu
-	\item Bit 5 - RD - Odczyt - gdy zostanie wpisana jedynka logiczna do tego bitu, dane zostaną odczytane z urządzenia \textit{slave}
-	\item Bit 4 - WR - Zapis - gdy zostanie wpisana jedynka logiczna do tego bitu, dane zostaną zapisane do urządzenia \textit{slave}
-	\item Bit 3 - ACK - Bit potwierdzenia - wysłanie bitu \textit{NACK} gdy jest przypisane logiczna jedynka lub wysłanie bitu \textit{ACK} gdy jest przypisane logiczne zero.
+	\item Bit 7 - STA - wysyła sygnał startu,
+	\item Bit 6 - STOP - wysyła sygnał stopu,
+	\item Bit 5 - RD - Odczyt - gdy zostanie wpisana jedynka logiczna do tego bitu, dane zostaną odczytane z urządzenia \textit{slave},
+	\item Bit 4 - WR - Zapis - gdy zostanie wpisana jedynka logiczna do tego bitu, dane zostaną zapisane do urządzenia \textit{slave},
+	\item Bit 3 - ACK - Bit potwierdzenia - wysłanie bitu \textit{NACK} gdy jest przypisane logiczna jedynka lub wysłanie bitu \textit{ACK} gdy jest przypisane logiczne zero,
 	\item Bit 1 - IACK - Bit przerwania potwierdzenia - gdy zostanie przypisana jedynka, czyści wysyłanie przerwania.
 \end{itemize}
-Rejestr \textit{SR} został przedstawiony na rysunku \ref{Fig:i2c_sr}
-		\subsubsection{slave}
-		\hspace{5mm}
-			\\opis i2c slave
+Rejestr \textit{SR} został przedstawiony na rysunku \ref{Fig:i2c_sr}\\
+	\begin{minipage}[c]{\textwidth}
+
+					\includegraphics[width=\textwidth]{./rysunki/sr_i2c.png}
+	\captionof{figure}{Rejestr statusu.\label{Fig:i2c_sr}}					
+	\end{minipage} 
+	\begin{itemize}
+		\item Bit 7 - RxACK - potwierdzenie pochodzące z urządzenia typu \textit{slave}. Gdy bit przyjmuje jedynkę logiczną sygnał to otrzymano\textit{NACK}, gdy jest zerem logicznym to otrzymano \textit{ACK},
+		\item Bit 6 - BUSY - sygnał zajętości, bit przyjmuje jedynkę logiczną po sygnale \textit{START} , zero logiczne pojawia się po sygnale \textit{STOP},
+		\item Bit 5 - AL - utrata arbitrażu - bit  przyjmuje jedynkę logiczną gdy pojawi się sygnał \textit{STOP} bez żądania lub wysyłany jest wysoki stan sygnału \textit{SDA} lecz znajduje się na nim niski,
+		\item Bit 1 - TIP - transfer w trakcie - bit przyjmuje jedynkę logiczną gdy dane są przekazywane,
+		\item Bit 0 - IF - Flaga przerwań - bit przyjmuje jedynkę logiczną gdy jeden bajt danych zostanie przesłany lub arbitraż zostanie utracony.
+	\end{itemize}
+	Transmisja składa się z czterech cykli:
+	\begin{enumerate}
+		\item Sygnał START - urządzenie \textit{master} generuje sygnał START jeśli bit \textit{STA} pochodzący z rejestru komend jest jedynką logiczną i gdy jeden z bitów \textit{WR} lub \textit{RD} jest w stanie wysokim.
+		\item Wysłanie adresu \textit{slave} - urządzenie \textit{master} wysyła adres, składa się on z siedmiu bitów, ósmy bit oznacz chęć zapisu(0) lub odczytu(1), bit ten jest najmniej znaczący. Urządzenie \textit{slave} odpowiada wysyłając potwierdzenie ustawiając linię \textit{SDA} na stan niski przy dziewiątym cyklu \textit{SCL}.
+		\item Przesył danych - po otrzymaniu potwierdzenie z danego adresu urządzenia \textit{slave}, rozpoczyna się transmisja bajtowa. Kierunek jej określił bit \textit{WR/RD}. Po każdym bajcie występuje bit potwierdzenia, jeśli \textit{slave} przekaże sygnał \textit{NACK}, urządzenie master może wygenerować  sygnał \textit{STOP} by zakończyć transmisje lub powtórzyć sygnał \textit{START}. Gdy urządzenie \textit{master} po odbiorze danych nie przekaże sygnału \textit{ACK}, urządzenie \textit{slave} zwalnia linię \textit{SDA} by urządzenie \textit{master} mogło wygenerować sygnał \textit{STOP} lub ponowny \textit{START}.
+		\item Sygnał STOP - urządzenie \textit{master} kończy transmisje.
+	\end{enumerate}
+	Moduł kontroli poleceń bajtowych odpowiedzialny jest za ruch bajtowy interfejsu \textit{I2C}. Pobiera dane z rejestru komend i z nich sekwencje bajtowe. Jeśli w rejestrze bity \textit{START}. \textit{STOP} i \textit{READ} są w stanie wysokim. Moduł stworzy sekwencje startującą transmisje, odpowiedzialną za odczyt danych z urządzenia \textit{slave} oraz wygeneruje syngał \textit{STOP}. Każda sekwencja jest rozbijana na pojedyncze bity, które są przekazywany do modułu kontroli komend bitowych.\\
+	Moduł kontroli komend bitowych jest odpowiedzialny za poprawne ustawianie stanów na linii \textit{SDA} i \textit{SCL}. Otrzymuje on informację jaka komenda jest aktualnie wykonywana. Każda operacja jest podzielona na cztery części tak jak zostało to przedstawione na rysunku \ref{Fig:bit_control}.\\
+		\begin{minipage}[c]{\textwidth}
+
+					\includegraphics[width=\textwidth]{./rysunki/i2c_bit.png}
+						\captionof{figure}{Podział operacji na części.\label{Fig:bit_control}}
+	\end{minipage} 
+	Algorytm działania modelu został przedstawiony na rysunku \ref{Fig:i2c_alg}\\.
+	\begin{minipage}[c]{\textwidth}
+	\begin{center}
+	
+
+					\includegraphics[height=15cm]{./rysunki/i2c_alg.png}
+	\captionof{figure}{Algorytm działania modelu.\label{Fig:i2c_alg}}
+	\end{center}	
+	\end{minipage} 
 
 	\subsection{Timer}
-	\hspace{5mm}
-		\\opis timera
-
+		\subsubsection{Komunikacja z magistralą \textit{Wishbone}}
+\hspace{5mm} W celu poprawnej komunikacji z magistralą, należało opisać moduł łączący. Posiada on w sobie inicjalizację modułu timera oraz przypisanie ciągłe do zera sygnału \textit{stall}.
+\subsubsection{Implementacja timera}
+\hspace{5mm} Timer posiada cztery rejestry, zostały one przedstawione w tabeli \ref{Tab:timer_reg}. Z każdym wysokim zboczem zegara wzrasta wartość 64-bitowego licznika \textit{mtime}. Przerwanie zostanie generowane gdy wartość \textit{mtime} będzie równa z \textit{mtimecmp}.\\
+\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Lista rejestrów timera\label{Tab:timer_reg}}
+\small				\begin{tabular}{|c|c|c|c|l|}
+					\hline
+					Nazwa & adres & ilość bitów & dostęp & \multicolumn{1}{|c|}{opis} \\ 
+					\hline
+					MTIME\_LOW & 0x00 & 32 & odczyt & \vtop{\hbox{\strut Aktualna wartość licznika,} \hbox{\strut niskie słowo}} \\
+					\hline
+					MTIME\_HIGH & 0x04 & 32 & odczyt & \vtop{\hbox{\strut Aktualna wartość licznika,} \hbox{\strut wysokie słowo}} \\
+					\hline
+					MTIMECMP\_LOW & 0x08 & 32 & zapis/odczyt &\vtop{\hbox{\strut Wartość do porównania,} \hbox{\strut niskie słowo}}\\
+					\hline
+					MTIMECMP\_HIGH & 0x0f & 32 & zapis/odczyt &\vtop{\hbox{\strut Wartość do porównania,} \hbox{\strut wysokie słowo}}\\
+					\hline
+				\end{tabular}
+		\end{center}
+\end{minipage}
 
 \newpage
 \section{Weryfikacja}
 
-	\subsection{RISCV DV}
-		\subsubsection{riscv arithmetic basic test}
-		\hspace{5mm}
-			\\krotko o tym tescie i wynik z simstatus jak rowniez fragment logu komparacji z spike/ovpsim
-			
-		\subsubsection{riscv rand instr test}
-		\hspace{5mm}
-			\\krotko o tym tescie i wynik z simstatus jak rowniez fragment logu komparacji z spike/ovpsim
-			
-		\subsubsection{riscv illegal instr test}
-		\hspace{5mm}
-			\\krotko o tym tescie i wynik z simstatus jak rowniez fragment logu komparacji z spike/ovpsim
+	\subsection{Rdzeń Ibex z RISCV DV}
+	W celu weryfikacja pracy rdzenia przeprowadzono testy, wykorzystując bibliotekę UVM i generator rozkazów RISCV-DV. Wygenerowane programy są symulowane na poziomie RTL, następnie poprzez program OVPSim jest generowany złoty wzór, który jest porównywany do symulacji. Po dokonaniu komparacji pojawia się podsumowanie, informujące ile testów ma wynik pozytywny lub negatywny. Graf testu UVM jest przedstawiony na rysunku \ref{Fig:vum_ibex_graph}.\\
+	\begin{minipage}[c]{\textwidth}
+	\begin{center}
 
-\subsection{ibex core}
+					\includegraphics[width=\linewidth]{./rysunki/ibex_uvm.png}
+						\captionof{figure}{Graf UVM testu rdzenia Ibex\label{Fig:vum_ibex_graph}}
+	\end{center}	
+	\end{minipage} 
+	Architektura UVM składa się z dwóch agentów przeznaczonych na obsługę pamięci. Jeden z nich obsługuje \textit{LSU}, drugi jest odpowiedzialny za przechwytywanie instrukcji. Czekają one na żądanie pochodzące z rdzenia, następnie udzielają potrzebnych danych lub instrukcji. Agent jest przeznaczony do losowego wysyłania przerwań rdzeniowi. Wszystkie testy dziedziczą po głównej klasie \textit{core\_ibex\_base\_test} i koordyunują one przepływ pojedynczego testu, od wczytania skomplikowanego programu binarnego i sprawdzanie stanu rdzenia.\\
+Jest 35 programów sprawdzających prace rdzenia. Każdy z nich testuje daną funkcjonalność między innymi: instrukcje arytmetyczne, instrukcje skokowe pomiędzy wieloma podprogramami, wprowadzenie błędnych instrukcji, resetowanie rdzenia w losowych momentach, używanie przerwań w losowych momentach, odczyt z pamięci o błędnym adresie itp. Przykładowe wyjście konsoli zostało przedstawione na listingu \ref{Lis:riscv_output}. Symulator OVPSim wytworzył 10184 instrukcje gdy symulacja RTL 10185. Różnica jednej instrukcji wynika z symulatora Riviera-PRO, po zakończeniu symulacji programu dokłada on przypisanie zera do rejestru x0. Po symulacji wszystkich testów otrzymano trzydzieści pięć wyników pozytywnych, co oznacza, że rdzeń działa poprawnie.\\
+	\begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:riscv_output,caption=Przykładowe porównanie]
+Comparing ovpsim/DUT sim result :/asm_tests/riscv_arithmetic_basic_test.0.o
+Processing ibex log :/riscv_arithmetic_basic_test.0/trace_core_00000000.log
+Processed instruction count : 10184
+CSV saved to :/rtl_sim/riscv_arithmetic_basic_test.0/trace_core_00000000.csv
+Processing ovpsim log :/instr_gen/ovpsim_sim/riscv_arithmetic_basic_test.0.log
+Processed instruction count : 10185 
+CSV saved to :/instr_gen/ovpsim_sim/riscv_arithmetic_basic_test.0.csv
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+\subsection{Pamięć RAM}
+\hspace{5mm} Weryfikacja polega na losowym generowaniu sygnału zezwolenia na zapis, poprawności danych, adresu i samych danych. Ilość tych pakietów również jest losowa. Dane które zostały wygenerowane przekazywane są poprzez wirtualny interfejs do pamięci RAM. Jeśli sygnały \textit{valid} i \textit{we} są w stanie wysokim, dane są przypisywane do tablicy asocjacyjnej o typie komórek 4-bitów do których przypisywany jest aktualny adres. Po zakończonym teście w fazie \textit{check\_phase}, wartości z tablicy są porównywane z stanem pamięci. Jeśli wszystkie wartości są zgodne test uzyskał wynik pozytywny. Graf UVM został przedstawiony na rysunku \ref{Fig:ram_graph}.\\
+	\begin{minipage}[c]{\textwidth}
+	\begin{center}
 
-\subsection{pamiec ram}
+					\includegraphics[height=10cm]{./rysunki/ram_graph.png}
+						\captionof{figure}{Graf UVM testu pamięci RAM\label{Fig:ram_graph}}
+	\end{center}	
+	\end{minipage} 
+Testy zostały przeprowadzone dla pamięci jednoportowej i dwuportowej. Ilość generowanych sekwencji jest mieści się w puli 500:1000. Ilość komórek testowanej pamięci jest równa 32 co sprawia, że adres mieści się w czterech bitach. Listing \ref{Lis:uvm_ram_report} przedstawia raport UVM.\\
+ \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:uvm_ram_report,caption=UVM raport]
+# KERNEL: ** Report counts by severity
+# KERNEL: UVM_INFO : 2871
+# KERNEL: UVM_WARNING :    0
+# KERNEL: UVM_ERROR :    0
+# KERNEL: UVM_FATAL :    0
+# KERNEL: ** Report counts by id
+# KERNEL: [DRV]   940
+# KERNEL: [MON]   947
+# KERNEL: [RNTST]     1
+# KERNEL: [SEQ]     1
+# KERNEL: [TEST_DONE]     1
+# KERNEL: [UVM/RELNOTES]     1
+# KERNEL: [test_pass]    32
+# KERNEL: [test_pass_final]     1
+# KERNEL: [uvm_test_top.e0.sb0]   947
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+Można z niego odczytać, że:
+\begin{itemize}
+	\item Test przeszedł bez problemów, o czym świadczy zerowa ilość wiadomości typu \textit{UVM\_WARNING}, \textit{UVM\_ERROR} i \textit{UVM\_FATAL},
+	\item zostało wysłanych 940 sekwencji, świadczy o tym liczba wiadomości \textit{DRV}
+	\item Monitor zaraportował, że dane zostały zmienione 947 razy, różnica między \textit{DRV} powstała ponieważ, 7 sekwencji zostało wysłanych ręcznie w celu resetu pamięci itp.
+	\item informacja o \textit{test\_pass} pojawiła się 32 razy, co zgadza się z dostępna liczbą komórek pamięci
+	\item informacja o \textit{test\_pass\_final} sygnalizuje, że test pokrył wszystkie komórki pamięci
+\end{itemize}
+\subsection{GPIO}
+\hspace{5mm} Weryfikacja polega na losowym generowania sygnałów pochodzących z zewnątrz, sygnałów wychodzących, zezwolenia na zapis i adresu. Ilość wytworzonych pakietów jest losowa. Wygenerowane dane są przekazywane poprzez wirtualny interfejs do modułu GPIO. Wysłane dane są zapisywane w dynamicznych tablicach i porównywane z wartością sygnałów na liniach \textit{O\_LED} i \textit{data\_s}. Struktura testu UVM jest identyczna jak w weryfikacji pamięci RAM i została przedstawiona na rysunku \ref{Fig:ram_graph}.
+\subsection{UART}
+\hspace{5mm} Weryfikacja modułu UART polega na generowaniu losowej wartości sygnału \textit{TX} i danych przekazywanych do wejścia \textit{RX}. Informacja o ilości transmisji przekazywana jest w głównym module testu. Gdy randomizacja wartości sygnału \textit{TX} się powiedzie rozpoczyna się transmisja. Jeśli dane zostały poprawnie wysłane zwracana jest informacja o powodzeniu. W dalszej kolejności następuje randomizacja 8-bitowej zmiennej przeznaczonej do przekazania na port \textit{RX}. Dane te są wysyłane bitowo, w tym celu wykorzystano zagnieżdzoną w pętli \textit{for}, pętle \textit{repeat}. Wartość tej pętli jest równa czasie trwania bitu i następuje w niej zmiana sygnału zegarowego. Po odczekaniu wymaganej ilości sygnałów zegarowych następuje wysłanie kolejnego bitu. Po wysłaniu wszystkich bitów następuje komparacja zmiennej przygotowanej do wysłania z wartością odczytaną. Po zakończeniu jest losowa kolejna transakcja. Struktura testu UVM została przedstawiona na rysunku \ref{Fig:ram_graph}, przykładowa transakcja została pokazana na listingu \ref{Lis:uart_uvm}
+ \begin{minipage}{\textwidth}
+\begin{scriptsize}
+\begin{lstlisting}[label=Lis:uart_uvm,caption=Przykładowa transakcja UART]
+numer transakcji = 19
+start = 1, 	 tx_data_in = b,	 tx_active = 0
+TX PASS
+Oczekiwana = 77, 	 otrzymana = 77
+RX PASS
+\end{lstlisting}
+\end{scriptsize}
+\end{minipage}
+\subsection{SPI}
+\hspace{5mm} Weryfikacja modułu SPI polega na generowaniu losowych danych przeznaczonych do transmisji, następnie monitorowane wyjście \textit{MOSI} w celu zebrania bitów i sprawdzenia poprawności transmisji. Pierwszą częścią jest odpowiednie ustawienie rejestrów w celu rozpoczęcia transmisji. Po każdym ustawieniu rejestrów ich wartości są sczytywane w celu weryfikacji. Gdy moduł \textit{SPI} jest gotów do transmisji uruchamiany jest \textit{task} z przesyłem danych oraz ich odbiorem. Poprawność jest sprawdzana po każdej wysłanej transakcji. Struktura testu UVM została przedstawiona na rysunku \ref{Fig:ram_graph}.
+	\subsection{Przykładowy program}
+	\hspace{5mm} W celu weryfikacji działania systemu na chipie został przygotowany program testowy. Program ten wpisuje daną na adres wyjścia \textit{GPIO}. Dana ta jest inkrementowana co pół sekundy. Wynik symulacji został przedstawiony na zdjęciu \ref{Fig:dioda_sim}. Rysunek \ref{Fig:diody_nexys} przedstawiają diody na płytce Nexys4 DDR.
+	\begin{minipage}[c]{\textwidth}
+	\begin{center}
 
-\subsection{gpio}
+					\includegraphics[width=\linewidth,height=7cm]{./rysunki/sim_led.png}
+						\captionof{figure}{Symulacja działania programu\label{Fig:dioda_sim}}
+	\end{center}	
+	\end{minipage} 	
+	
+	\begin{minipage}[c]{\textwidth}
+	\begin{center}
 
-\subsection{uart}
-
-\subsection{spi}
-
-\subsection{i2c}
-
+					\includegraphics[width=10cm,height=2cm]{./rysunki/plytka_2.png}
+					\includegraphics[width=10cm,height=2cm]{./rysunki/plytka_3.png}
+						\captionof{figure}{Działający program na płytce FPGA NEXYS4 DDR\label{Fig:diody_nexys}}
+	\end{center}	
+	\end{minipage} 
+	
 \newpage
-\section{Benchmarki}
+\section{Wyniki eksperymentów}
+\subsection{Synteza modułów peryferyjnych}
 \hspace{5mm}
-	\\ pamiec 1p ram vs 2p ram
+	Została przeprowadzona synteza modułów peryferyjnych. Wykorzystane zasoby płytki \textit{FPGA} zostały przedstawione w tabelach:
+\begin{itemize}
+	\item Synteza modułu \textit{SPI}, wykorzystanie zasobów zostało przedstawione w tabeli \ref{Tab:spi_synth},
+	\item synteza modułu \textit{UART}, wykorzystanie zasobów zostało przedstawione w tabeli \ref{Tab:uart_synth},
+	\item synteza modułu \textit{I2C}, wykorzystanie zasobów zostało przedstawione w tabeli \ref{Tab:i2c_synth},
+	\item synteza modułu \textit{RAM}, wykorzystanie zasobów zostało przedstawione w tabeli \ref{Tab:ram_synth},
+	\item synteza modułu timera, wykorzystanie zasobów zostało przedstawione w tabeli \ref{Tab:timer_synth},
+	\item synteza rdzenia Ibex, wykorzystanie zasobów zostało przedstawione w tabeli \ref{Tab:ibex_synth}.
+\end{itemize}	
+	 \begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu \textit{SPI}\label{Tab:spi_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 99 & 63400 & 0.16  \\
+					\hline
+					LUTRAM & 16 & 19000 & 0.08  \\
+					\hline
+					FF & 88 & 126800 & 0.07 \\
+					\hline
+					IO & 56 & 210 & 26.67 \\
+					\hline
+					BUFG & 1 & 32 & 3.13 \\
+					\hline
+				\end{tabular}
+		\end{center}
+\end{minipage}\\
+
+
+	\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu \textit{UART}\label{Tab:uart_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 75 & 63400 & 0.12  \\
+					\hline
+					FF & 60 & 126800 & 0.05 \\
+					\hline
+					IO & 50 & 210 & 23.81 \\
+					\hline
+					BUFG & 1 & 32 & 3.13 \\
+					\hline
+				\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+
+	\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu \textit{I2C}\label{Tab:i2c_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 227 & 63400 & 0.36  \\
+					\hline
+					FF & 178 & 126800 & 0.14 \\
+					\hline
+					IO & 53 & 210 & 25.24 \\
+					\hline
+					BUFG & 1 & 32 & 3.13 \\
+					\hline
+				\end{tabular}
+		\end{center}
+\end{minipage}\\
+
+	\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu pamięci \textit{RAM}\label{Tab:ram_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 30 & 63400 & 0.05  \\
+					\hline
+					FF & 35 & 126800 & 0.03 \\
+					\hline
+					BRAM & 32 & 135 & 23.7 \\
+					\hline
+					IO & 145 & 210 & 69.05 \\
+					\hline
+					BUFG & 2 & 32 & 6.25 \\
+					\hline
+				\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+
+	\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu \textit{timera}\label{Tab:timer_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 151 & 63400 & 0.24  \\
+					\hline
+					FF & 163 & 126800 & 0.13 \\
+					\hline
+					IO & 81 & 210 & 38.57 \\
+					\hline
+					BUFG & 1 & 32 & 3.13 \\
+					\hline
+				\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+	\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu rdzenia \textit{Ibex}\label{Tab:ibex_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 2858 & 63400 & 4.08  \\
+					\hline
+					LUTRAM & 48 & 63400 & 0.25  \\
+					\hline
+					FF & 929 & 126800 & 0.73 \\
+					\hline
+					DSP & 1 & 240 & 0.42  \\
+					\hline
+					IO & 254 & 210 & 120.95 \\
+					\hline
+					BUFG & 2 & 32 & 6.25 \\
+					\hline
+				\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+Duże wykorzystanie zasobów portów \textit{In/Out} spowodowane jest użyciem magistrali \textit{Wishbone}.
+
+
+\subsection{Synteza systemu na chipie}
+\hspace{5mm}
+ Tabela \ref{Tab:after_synth} przedstawia wykorzystanie zasobów dostępnych na płytce \textit{FPGA} \textit{Nexys4 DDR}. Po użyciu dyrektywy \textit{(* ram\_decomp = "power" *)}, która powoduje rozbicie pamięci na mniejsze części, spowodowało zmianę wykorzystania zasobów. Tabela \ref{Tab:power_synth} przedstawia wykorzystanie tych zasobów. Widoczny jest wzrost zapotrzebowania \textit{LUT}, dlatego finalnie projekt jest syntezowany bez użycia dyrektywy. Próba wymuszenia zastąpienia pamięci rejestrami zakończyła się niepowodzeniem. Płytka FPGA Nexys4 DDR jest zbyt uboga w zasobach by zapewnić potrzebną ilość rejestrów. Wymagana liczba to 4194304, limit płytki to 1000000.\\
+\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu systemu na chipie z pamięcią dwu-portową\label{Tab:after_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 3333 & 63400 & 5.26  \\
+					\hline
+					LUTRAM & 64 & 19000 & 0.34  \\
+					\hline
+					FF & 1478 & 126800 & 1.17 \\
+					\hline
+					BRAM & 32 & 135 & 23.70 \\
+					\hline
+					DSP & 1 & 240 & 0.42 \\
+					\hline
+					IO & 22 & 210 & 10.48 \\
+					\hline
+					BUFG & 4 & 32 & 12.50 \\
+					\hline
+					PLL & 1 & 6 & 16.97 \\
+					\hline															
+				\end{tabular}
+		\end{center}
+\end{minipage}
+\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu systemu na chipie wraz z dyrektywą \textit{ram\_decomp}z pamięcią dwu-portową\label{Tab:power_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 4143 & 63400 & 6.53  \\
+					\hline
+					LUTRAM & 64 & 19000 & 0.34  \\
+					\hline
+					FF & 1492 & 126800 & 1.18 \\
+					\hline
+					BRAM & 32 & 135 & 23.70 \\
+					\hline
+					DSP & 1 & 240 & 0.42 \\
+					\hline
+					IO & 22 & 210 & 10.48 \\
+					\hline
+					BUFG & 4 & 32 & 12.50 \\
+					\hline
+					PLL & 1 & 6 & 16.97 \\
+					\hline															
+				\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+Liczba wykorzystanych zasób zsyntezowanego systemu na chipie nie jest równa sumie wszystkich modułów. Przyczyną jest optymalizacja która zachodzi w trakcie syntezy.\\
+Tabela \ref{Tab:synth_1pram} przedstawia wykorzystanie zasobów systemu z jedno-portową pamięcią RAM.\\
+\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu systemu na chipie z pamięcią jedno-portową\label{Tab:synth_1pram}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 3379 & 63400 & 6.53  \\
+					\hline
+					LUTRAM & 64 & 19000 & 0.34  \\
+					\hline
+					FF & 1477 & 126800 & 1.17 \\
+					\hline
+					BRAM & 64 & 135 & 47.41 \\
+					\hline
+					DSP & 1 & 240 & 0.42 \\
+					\hline
+					IO & 22 & 210 & 10.48 \\
+					\hline
+					BUFG & 4 & 32 & 12.50 \\
+					\hline
+					PLL & 1 & 6 & 16.97 \\
+					\hline																			\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+Zauważalny jest znaczący wzrost wykorzystania BRAM. Dlatego domyślnie projekt wykorzystuje dwu-portową pamięć RAM. W celu jeszcze większej optymalizacji wykorzystana dyrektywę \textit{AreaMapLargeShiftRegToBRAM}, wymusza ona wykorzystanie BRAM dla rejestrów przesuwnych. Tabela \ref{Tab:dyr_synth} przedstawia wykorzystanie zasobów po przeprowadzonej syntezie.\\
+\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu systemu na chipie z pamięcią dwu-portową z użyciem dyrektywy\textit{AreaMapLargeShiftRegToBRAM}\label{Tab:dyr_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 3327 & 63400 & 5.25  \\
+					\hline
+					LUTRAM & 64 & 19000 & 0.34  \\
+					\hline
+					FF & 1478 & 126800 & 1.17 \\
+					\hline
+					BRAM & 32 & 135 & 23.70 \\
+					\hline
+					DSP & 1 & 240 & 0.42 \\
+					\hline
+					IO & 22 & 210 & 10.48 \\
+					\hline
+					BUFG & 4 & 32 & 12.50 \\
+					\hline
+					PLL & 1 & 6 & 16.97 \\
+					\hline																			\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+Dzięki temu zabiegowi zaoszczędzono sześć LUT i nie spowodowało to dodatkowego wykorzystania innych zasobów. Po zastosowaniu dodatkowej dyrektywy \\
+Kolejna użyta dyrektywa ma na celu optymalizację bloków FSM to \textit{sequential}. Tabela \ref{Tab:fsm_synth} przedstawia zużycie zasobów płytki.\\
+\begin{minipage}[c]{\textwidth}
+		 \begin{center}
+			\captionof{table}{Wykorzystanie zasobów zsyntezowanego modułu systemu na chipie z pamięcią dwu-portową z użyciem dyrektywy\textit{AreaMapLargeShiftRegToBRAM} i \textit{sequential}\label{Tab:fsm_synth}}
+				\begin{tabular}{|c|c|c|c|}
+					\hline
+					Zasób & Wykorzystanie & Dostępność & Wykorzystanie [ \% ] \\ 
+					\hline
+					LUT & 3318 & 63400 & 5.23  \\
+					\hline
+					LUTRAM & 64 & 19000 & 0.34  \\
+					\hline
+					FF & 1476 & 126800 & 1.16 \\
+					\hline
+					BRAM & 32 & 135 & 23.70 \\
+					\hline
+					DSP & 1 & 240 & 0.42 \\
+					\hline
+					IO & 22 & 210 & 10.48 \\
+					\hline
+					BUFG & 4 & 32 & 12.50 \\
+					\hline
+					PLL & 1 & 6 & 16.97 \\
+					\hline																			\end{tabular}
+		\end{center}
+\end{minipage}\\
+\\
+Użycie dodatkowych dyrektyw zmniejszyło zapotrzebowanie zasobów. Dlatego w finalnej wersji zostały użyte przedstawione dyrektywy.
+\\
+Rysunek \ref{Fig:device} przedstawia rozmieszczenie wykorzystywanych elementów na płytce.
+			\begin{minipage}[c]{\textwidth}
+	\begin{center}
+	
+
+					\includegraphics[height=0.9\textheight,width=\linewidth]{./rysunki/device_2.png}
+	\captionof{figure}{Rozmieszczenie wykorzystywanych elementów\label{Fig:device}}
+	\end{center}	
+	\end{minipage} 
 
 \newpage
-\section{Uruchomienie przykładowego programu}
-\newpage
-\section{Podsumowanie i wnioski}
-	\subsection{dalszy rozwoj}
-	\hspace{5mm}
-		\\text
+
+\section{Podsumowanie}
+	\subsection{Podsumowanie}
+		\hspace{5mm} W ramach realizacji pracy został opracowany system na chipie wykorzystujący rdzeń Ibex RISC-V. Mikroprocesor ten spełnia wymagania specyfikacji ISA mikroprocesora RISC-V opracowanej przez . Do systemu została dodana pamięć RAM, z możliwością wyboru między pamięcią dwu-portową a jedno-portową. Ponadto zostały zaimplementowane peryferia takie jak:
+	\begin{itemize}
+		\item \textit{GPIO} - moduł wejść/wyjść GPIO z czterema wyjściami i wejściami,
+		\item \textit{UART} - interfejs \textit{UART},
+		\item \textit{SPI} - interfejs \textit{SPI},
+		\item \textit{I2C} - interfejs \textit{I2C}.
+	\end{itemize}
+
+Integralną część systemu stanowi magistrala \textit{Wishbone}, która odpowiada za komunikację między rdzeniem a peryferiami i pamięcią. W celu poprawnego działania tej magistrali stworzone zostały interfejsy do urządzeń typu \textit{slave} i \textit{master}, oraz moduł sterowania magistralą. W celu poprawnej komunikacji, pamięć RAM, jak i peryferia, zostały przypisane do poszczególnych adresów. Moduł‚ \textit{wishbone\_sharedbus} organizuje transfer danych magistrali.
+
+W celu sprawdzenia działania systemu na chipie została przeprowadzona weryfikacja rdzenia, pamięci RAM i peryferiów. Wykorzystana została biblioteka UVM 1.2, która pozwala na tworzenie zaawansowanego środowiska testowego. Rdzeń został‚ przetestowany poprzez wykonywanie skomplikowanych programów assemblerowych. Programy te zostały utworzone dzięki RISCV-DV, który pozwala na generowanie programów sprawdzających daną funkcjonalność rdzenia. Wynik symulacji RTL został‚ porównany za ,,złotym'' wzorem przygotowanym poprzez symulator \textit{ISS} OVPSim. Wynik pozytywny uzyskały wszystkie testy. Pamięć RAM, jak i peryferia, również zostały poddane weryfikacji. Wszystkie testy przeszły z wynikiem pozytywnym.
+
+Projekt jest w pełni syntezowalny. Eksperymenty i badania zostały przeprowadzone w środowisku \textit{Vivado 2019.2}. System został zaimplementowany w układzie FPGA płyty prototypowej Nexys4DDR. Weryfikacja praktyczna została przeprowadzona z wykorzystaniem prostego programu napisanego w języku asembler.
+
+Architektura RISC-V jest wciąż rozwijana. Rdzeń mikroprocesora warto rozbudować między innymi o interfejs \textit{JTAG} oraz moduł \textit{RISCV-DBG}. Warto również rozważyć zastąpienie magistrali \textit{Wishbone} magistralą AXI z uwagi na jej coraz szersze zastosowanie. Pomimo pewnych pomysłów na dalszy rozwój systemu, należy podkreślić, że cel stawiany pracy został osiągnięty, a zakres w pełni zrealizowany.
 
 \newpage
 
@@ -1872,36 +2317,41 @@ Rejestr \textit{SR} został przedstawiony na rysunku \ref{Fig:i2c_sr}
 
 	\bibitem{open_source} Karl Michael Popp. \textit{Best Practices for commercial use of open source software}. Books On Demand  2015.
 	
-	\bibitem{isa_site} https://riscv.org/specifications/ [dostęp 10 sierpień 2020]
+	\bibitem{isa_site}[Online] RISC-V, ISA Specification, \url{https://riscv.org/specifications/} [dostęp 10 sierpień 2020]
 	
 	\bibitem{isa_book} Andrew Waterman, Krste Asanović. \textit{The RISC-V Instruction Set Manual, Volume I: Base User-Level ISA version 2.2}. University of California, Berkeley. EECS-2016-118. Retrieved 7 May 2017.
 	
 	\bibitem{ram_book} Kung Linliu. \textit{DRAM-Dynamic Random Access Memory: The memory of computer, smart phone and notebook PC}. Independently Published 2018.
 	
-	\bibitem{spi_book} https://www.nxp.com/files-static/microcontrollers/doc/ref\_manual/S12SPIV4.pdf [dostęp 10 sierpień 2020]
+	\bibitem{spi_book}[Online] Freescale Semiconductor, Inc., SPI Block Guide \url{https://bit.ly/3iF2u3l} [dostęp 10 sierpień 2020]
 	
 	\bibitem{i2c_book} 	Dominique Paret, Carl Fenger. \textit{The I2C Bus: From Theory to Practice}. Wiley 1997 
 	
 	\bibitem{uart_book} Adam Osborne. \textit{An Introduction to Microcomputers Volume 1: Basic Concepts}. McGraw-Hill; 2nd edition 1980.
 	
-	\bibitem{gpio_doc} https://bit.ly/2DJ1Y5F [dostęp 10 sierpień 2020]
+	\bibitem{gpio_doc}[Online] Sasang Balachandran, General PurposeInput/Output (GPIO),\\ \url{https://bit.ly/2SylFkq} [dostęp 10 sierpień 2020]
 	
-	\bibitem{wishbone_b4} http://cdn.opencores.org/downloads/wbspec\_b4.pdf [dostęp 10 sierpień 2020]
+	\bibitem{wishbone_b4}[Online] OpenCores, Wishbone B4, \url{https://bit.ly/37vmPGi} [dostęp 10 sierpień 2020]
 	
-	\bibitem{wishbone_tutorial} http://zipcpu.com/zipcpu/2017/11/07/wb-formal.html [dostęp 10 sierpień 2020]
+	\bibitem{wishbone_tutorial}[Online] Gisselquist Technology, Building Formal Assumptions to Describe Wishbone Behaviour, \url{https://bit.ly/35wlJYl} [dostęp 10 sierpień 2020]
 	
-	\bibitem{ibex_doc} https://ibex-core.readthedocs.io/en/latest/index.html [dostęp 10 sierpień 2020]
+	\bibitem{ibex_doc}[Online] lowRISC, Ibex: An embedded 32 bit RISC-V CPU core, \url{https://bit.ly/35wmPDa} [dostęp 10 sierpień 2020]
 	
-	\bibitem{google_opentitan} https://tcrn.ch/2PIjSrN [dostęp 10 sierpień 2020]
+	\bibitem{google_opentitan}[Online] Techcrunch, Google launches OpenTitan, \url{https://tcrn.ch/2PIjSrN} [dostęp 10 sierpień 2020]
 
-	\bibitem{toolchain} https://github.com/riscv/riscv-gnu-toolchain [dostęp 10 sierpień 2020]
+	\bibitem{toolchain}[Online] RISC-V, Riscv-gnu-toolchain, \url{https://bit.ly/3dTBcW2} [dostęp 10 sierpień 2020]
 	
-	\bibitem{google_dv} https://bit.ly/33Vh8zI [dostęp 10 sierpień 2020]
+	\bibitem{google_dv}[Online] Google, Riscv-dv documentation, \url{https://bit.ly/33Vh8zI} [dostęp 10 sierpień 2020]
 	
-	\bibitem{nexys} \url{https://dl.btc.pl/kamami\_wa/digilent\_nexys4-ddr\_1.pdf} [dostęp 10 sierpień 2020]
+	\bibitem{nexys}[Online] DIGILENT, Nexys4DDR™ FPGA Board Reference Manual, \url{https://bit.ly/3mhBhG8} [dostęp 10 sierpień 2020]
 	
-	\bibitem{SV} \url{https://standards.ieee.org/standard/1800-2017.html} [dostęp 10 sierpień 2020]
+	\bibitem{SV}[Online] IEEE, IEEE Standard for SystemVerilog--Unified Hardware Design, Specification, and Verification Language  \url{https://bit.ly/34pxnVr} [dostęp 10 sierpień 2020]
+	
+	\bibitem{spi_rys}[Online] Serial Peripheral Interface, \url{https://bit.ly/37BbIvm} [dostęp 10 sierpień 2020]
 
+	\bibitem{uart_rys}[Online] UART, \url{https://bit.ly/3onZY5g} [dostęp 10 sierpień 2020]
+	
+	\bibitem{uvm}[Online] Accellera, Universal Verification Methodology (UVM) 1.2 User’s Guide, \url{https://bit.ly/2FZRa4w} [dostęp 10 sierpień 2020]
 \end{thebibliography}
 
 \end{document}

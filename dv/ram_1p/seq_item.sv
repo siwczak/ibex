@@ -14,8 +14,9 @@ class seq_item extends uvm_sequence_item;
 	endfunction
 	
 	function string value();
-		value = $sformatf("clk%d, valid %d,we_i: %d, addr_i %d, data_i %d, data_o %d", clk, valid_i ,we_i , addr_i, data_i, data_o);
+		value = $sformatf("clk%d, valid %d,we_i: %d, addr_i %d, data_i %d", clk, valid_i ,we_i , addr_i, data_i);
 	endfunction
 	
+	constraint valid_status { valid_i dist {1 := 70 }; }
 	
 endclass

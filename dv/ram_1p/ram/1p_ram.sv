@@ -50,7 +50,6 @@ module p1_ram_data#(
 	always_ff @(posedge clk_i)
 		if (valid_i) begin
 			data_o = mem[addr_i];
-			$display("test");	
 		end
 			
 endmodule
